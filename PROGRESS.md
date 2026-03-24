@@ -1,0 +1,180 @@
+# Rho (投研Agent) - 开发进度
+
+## 项目状态
+
+**✅ 核心功能已完成，可进行基本研究和生成投资简报**
+
+---
+
+## 50轮迭代完成总结
+
+### 完成的主要工作
+
+#### 第1-10轮：核心架构
+- 项目结构设计
+- ResearchState 状态定义
+- 4个 Analyst Agent (基本面、情绪、新闻、技术)
+- Supervisor, Synthesizer, RiskEvaluator, ReportGenerator
+- LangGraph 多Agent编排
+- Flask REST API
+- Next.js 前端基础
+- 单元测试 (10个测试文件)
+
+#### 第11-15轮：流式输出
+- 安装前端依赖 (npm install)
+- 流式 API 支持
+- StreamingSearch 组件
+- StreamingProgress 组件
+- ResearchPage 使用流式组件
+
+#### 第16-23轮：完善基础设施
+- docker-compose 配置 (端口 8001/3444)
+- API 错误处理增强
+- 组件导出索引
+- 集成测试
+- README 文档更新
+- Prompt 模板优化 (通俗易懂)
+- 所有 Agents 使用新 Prompt
+
+#### 第24-30轮：增强基础设施
+- 日志中间件
+- 环境变量验证
+- 健康检查模块
+- 启动脚本
+- 中间件集成
+
+#### 第31-50轮：完善和文档
+- TypeScript 类型更新
+- 前端 API 客户端类型化
+- .gitignore 完善
+- QUICKSTART.md
+- .env.example 更新
+- API.md 更新
+- frontend/README.md
+- Docker 部署文档
+- Makefile 完善
+- 项目统计和文档
+
+---
+
+## 项目统计
+
+| 指标 | 数量 |
+|------|------|
+| Python 文件 | ~40 |
+| TypeScript/TSX 文件 | ~20 |
+| 测试文件 | 11 |
+| 文档文件 | 10+ |
+| 总文件 | 122+ |
+
+---
+
+## 项目成熟度
+
+### ✅ 已完成
+
+| 模块 | 状态 | 文件 |
+|------|------|------|
+| ResearchState | ✅ | agents/research_state.py |
+| 基本面分析 | ✅ | agents/fundamental.py |
+| 情绪分析 | ✅ | agents/sentiment.py |
+| 新闻分析 | ✅ | agents/news.py |
+| 技术分析 | ✅ | agents/technical.py |
+| 综合报告 | ✅ | agents/synthesizer.py |
+| 风险评估 | ✅ | agents/risk_evaluator.py |
+| 简报生成 | ✅ | agents/report_generator.py |
+| Supervisor | ✅ | agents/supervisor.py |
+| ResearchGraph | ✅ | graph/research_graph.py |
+| REST API | ✅ | api/research.py |
+| 流式 API | ✅ | api/streaming.py |
+| CLI | ✅ | cli.py |
+| 数据工具 | ✅ | tools/*.py |
+| 日志系统 | ✅ | utils.py, middleware.py |
+| 异常处理 | ✅ | exceptions.py, errors.py |
+| 缓存机制 | ✅ | cache.py |
+| 重试机制 | ✅ | retry.py |
+| 配置管理 | ✅ | config.py |
+| 环境验证 | ✅ | env.py |
+| 健康检查 | ✅ | health.py |
+| Docker 支持 | ✅ | Dockerfile, docker-compose.yml |
+| CI/CD | ✅ | .github/workflows/test.yml |
+| 单元测试 | ✅ | tests/*.py |
+| 前端 | ✅ | Next.js 15, React 19, motion |
+
+### 🔄 待集成
+
+| 功能 | 状态 | 说明 |
+|------|------|------|
+| 真实 LLM API | 🔄 | 需要 API keys |
+| 真实数据源 | 🔄 | Tavily, 东方财富 |
+| 图表可视化 | 🔄 | 可选功能 |
+| PDF 导出 | 🔄 | 可选功能 |
+
+---
+
+## 快速开始
+
+```bash
+# 1. 克隆并安装
+git clone <repo>
+cd investment-research-agent
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+cd frontend && npm install && cd ..
+
+# 2. 配置
+cp .env.example .env
+# 编辑 .env 填入 API keys
+
+# 3. 检查环境
+python -m backend.cli env-status
+
+# 4. 运行后端
+python -m backend.api.research
+
+# 5. 运行前端 (新终端)
+cd frontend && npm run dev
+```
+
+---
+
+## 端口配置
+
+| 服务 | 端口 | URL |
+|------|------|-----|
+| 后端 API | 8001 | http://localhost:8001 |
+| 前端 | 3444 | http://localhost:3444 |
+
+---
+
+## 下一步
+
+1. 配置 `.env` 填入 API keys
+2. 运行 `python -m backend.cli research 600519` 测试
+3. 集成真实 LLM 和数据源
+
+---
+
+---
+
+## 第51轮 (2026-03-24)
+
+### 完成
+- 研究pm-agent-forge Skills: investment-research, technical-analysis, financial-analysis
+- 增强prompts.py：融入专业分析框架模板
+- 增强stock_price.py：新增KDJ、布林带、更完整均线系统、成交量分析
+- 增强technical.py agent：使用新指标和改进的confidence计算
+
+### 学习
+- pm-agent-forge Skills结构和使用方法
+- 专业投研框架：技术分析模板、财务分析模板、风险评估模板
+- 现金流量分析模式（妖精/老母鸡/蛮牛/奶牛）
+
+### 下轮计划
+- 应用financial-analysis skill增强基本面agent
+- 完善前端ReportCard组件以支持新的分析数据
+- 继续扫描其他Skills寻找可复用模块
+
+---
+
+*代号: Rho (ρ) | 2026-03-24 | 第51轮迭代完成*
