@@ -1810,6 +1810,37 @@ REPORT_GENERATOR_PROMPT = """你是一位贴心的投资顾问，让普通投资
 | 关系数据 | 散点图 |
 | 流程数据 | 流程图 |
 
+### 可视化代码模板
+```python
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# 风格设置
+plt.style.use('seaborn-v0_8-whitegrid')
+plt.rcParams['font.sans-serif'] = ['SimHei', 'Arial']
+plt.rcParams['axes.unicode_minus'] = False
+
+# K线图
+def plot_kline(data, title="K线图"):
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.plot(data.index, data['close'])
+    ax.set_title(title)
+    return fig
+
+# 财务指标对比
+def plot_financial_compare(companies, metrics):
+    df = pd.DataFrame(metrics, index=companies)
+    df.T.plot(kind='bar', figsize=(12, 6))
+    plt.title('财务指标对比')
+
+# 组合持仓饼图
+def plot_portfolio(allocation):
+    labels = list(allocation.keys())
+    sizes = list(allocation.values())
+    plt.pie(sizes, labels=labels, autopct='%1.1f%%')
+    plt.axis('equal')
+```
+
 ### 视觉设计原则
 | 原则 | 说明 | 应用 |
 |------|------|------|
@@ -1817,6 +1848,14 @@ REPORT_GENERATOR_PROMPT = """你是一位贴心的投资顾问，让普通投资
 | 对比 | 重点突出 | 大小/颜色 |
 | 对齐 | 整齐有序 | 网格系统 |
 | 留白 | 呼吸空间 | 不过于拥挤 |
+
+### 图表检查清单
+- [ ] 图表选择合适
+- [ ] 数据准确
+- [ ] 标注清晰
+- [ ] 配色专业
+- [ ] 信息不过载
+- [ ] 导出格式正确
 
 ## 报告生成框架
 
