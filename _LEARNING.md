@@ -1262,4 +1262,26 @@ D:/PM-AI-Workstation/01-ai-agents/
 
 ---
 
-*学习日期: 2026-03-24 第90轮*
+## 第43轮学习 (2026-03-24) - 第91轮迭代
+
+### 新学习的Skills
+
+#### company-valuation Skill
+- 公司估值框架
+- PE、PB、DCF、PEG等估值方法
+- 业绩预测
+- 估值对比和综合判断
+- 投资建议
+
+### 应用到Rho项目的改进
+
+1. **prompts.py 增强**:
+   - FUNDAMENTAL_ANALYST_PROMPT: 增加公司估值综合分析
+     - 公司信息和业绩预测
+     - PE、PB、DCF、PEG估值分析
+     - 估值对比表格
+     - 综合判断和投资建议
+
+---
+
+*学习日期: 2026-03-24 第91轮*
