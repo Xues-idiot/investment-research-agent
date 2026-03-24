@@ -598,4 +598,35 @@ D:/PM-AI-Workstation/01-ai-agents/
 
 ---
 
-*学习日期: 2026-03-24 第67轮*
+## 第20轮学习 (2026-03-24) - 第68轮迭代
+
+### 新学习的Skills
+
+#### bull-bear-analysis Skill
+- 多空分析框架
+- Bull/Bear/Base Case情景分析
+- 概率加权预期
+- 风险回报比计算
+
+#### earnings-call-analysis Skill
+- 业绩电话会议分析框架
+- 管理层语气分析
+- 前瞻指引对比
+- 变化检测
+
+### 应用到Rho项目的改进
+
+1. **prompts.py 增强**:
+   - SYNTHESIZER_PROMPT: 增加多空情景分析
+     - Bull Case乐观情景
+     - Bear Case悲观情景
+     - Base Case基准情景
+     - 概率加权预期
+   - FUNDAMENTAL_ANALYST_PROMPT: 增加业绩电话会议参考
+     - 管理层表态
+     - 前瞻指引对比
+     - 变化检测
+
+---
+
+*学习日期: 2026-03-24 第68轮*
