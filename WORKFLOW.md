@@ -181,7 +181,46 @@ D:/PM-AI-Workstation/01-ai-agents/
 - 有好的参考项目，clone 到 `_reference/`
 
 ### 4.4 本项目已用 Skills (持续更新)
-- (每轮发现新内容后在此记录)
+
+已应用 Skills 列表：
+
+**investment-research/**
+- [x] research-report-generation - 研究报告模板
+- [x] technical-analysis - 技术分析框架
+- [x] financial-statement-analysis - 财务报表分析
+- [x] peer-comparison - 竞品对比分析
+- [x] industry-research - 行业研究框架
+- [x] stock-data-collection - 股票数据收集
+- [x] financial-analysis - 财务分析框架
+- [x] investment-analysis - 投资分析流程
+- [x] risk-assessment - 风险评估框架
+- [x] announcement-analysis - 公告解读框架
+- [x] yfinance-integration - yfinance数据集成
+- [x] macro-analysis - 宏观分析框架
+- [x] company-valuation - 估值分析框架
+- [x] a-share-market-analysis - A股市场分析
+- [x] value-investment - 价值投资框架
+- [x] growth-investment - 成长投资框架
+- [x] sec-filing-analysis - SEC Filing分析
+- [x] pharma-analysis - 制药行业分析
+- [x] portfolio-construction - 投资组合构建
+- [x] quantitative-screening - 量化筛选框架
+- [x] event-driven-investment - 事件驱动投资
+- [x] sentiment-monitoring - 舆情监控框架
+- [x] data-visualization - 数据可视化指南
+- [x] backtesting - 回测验证框架
+- [x] factor-investing - 因子投资分析
+- [x] alternative-data - 另类数据分析
+- [x] bull-bear-analysis - 多空情景分析
+- [x] earnings-call-analysis - 业绩电话会议分析
+
+**finance/**
+- [x] financial-analysis - 详细财务分析框架
+- [x] investment-analysis - 投资分析方法
+- [x] risk-assessment - 风险评估框架
+
+**data-analytics/**
+- [x] data-visualization - 数据可视化指南
 
 ---
 
