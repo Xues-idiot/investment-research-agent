@@ -758,4 +758,32 @@ D:/PM-AI-Workstation/01-ai-agents/
 
 ---
 
-*学习日期: 2026-03-24 第72轮*
+## 第25轮学习 (2026-03-24) - 第73轮迭代
+
+### 新学习的Skills
+
+#### vader-sentiment Skill
+- VADER情感分析框架
+- 情感量化指标（compound/pos/neg/neu）
+- 时间序列聚合分析
+- 异常检测和信号生成
+
+#### knowledge-graph-rag Skill
+- 知识图谱RAG框架
+- 图谱Schema设计
+- Neo4j查询示例
+- 关系推理和可视化
+
+### 应用到Rho项目的改进
+
+1. **prompts.py 增强**:
+   - SENTIMENT_ANALYST_PROMPT: 增加VADER情感量化
+     - 情感得分表格
+     - 情感时间序列分析
+   - NEWS_ANALYST_PROMPT: 增加知识图谱关联
+     - 关联公司/人物/行业
+     - 事件关系
+
+---
+
+*学习日期: 2026-03-24 第73轮*
