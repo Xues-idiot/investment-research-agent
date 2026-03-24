@@ -185,4 +185,48 @@ D:/PM-AI-Workstation/01-ai-agents/
 
 ---
 
-*学习日期: 2026-03-24 第51轮*
+## 第5轮学习 (2026-03-24) - 第52轮迭代
+
+### pm-agent-forge Skills 继续研究
+
+#### 新发现的相关Skills
+
+**investment-research/**:
+- `peer-comparison` - 竞品对比分析完整模板
+
+**data-analytics/**:
+- `data-visualization` - 数据可视化指南和图表选择决策树
+
+#### peer-comparison Skill 关键内容
+
+1. **竞品对比维度**:
+   - 业务对比（营收、增速、毛利率、净利率）
+   - 财务对比（ROE、资产负债率、现金流）
+   - 估值对比（PE、PB、PS、EV/EBITDA）
+   - 成长性对比（营收增速、净利润增速、预期增速）
+
+2. **综合评分体系**:
+   - 业务(30%) + 财务(30%) + 估值(20%) + 成长(20%)
+   - 总分排序给出投资建议
+
+3. **竞品分析模板**:
+   - 对比公司表格
+   - 多维度对比表格
+   - 综合评分表格
+   - 投资建议
+
+### 应用到Rho项目的改进
+
+1. **financial_data.py 增强**:
+   - 新增 `get_peer_comparison()` 函数
+   - 支持默认可比公司（白酒行业：茅台、五粮液、洋河）
+   - 返回目标股票和可比公司的关键指标
+
+2. **fundamental.py 增强**:
+   - 更新fundamental agent使用peer comparison
+   - 新增 `_build_peer_comparison_context()` 函数
+   - 生成竞品对比表格
+
+---
+
+*学习日期: 2026-03-24 第52轮*
