@@ -213,14 +213,39 @@ D:/PM-AI-Workstation/01-ai-agents/
 - [x] alternative-data - 另类数据分析
 - [x] bull-bear-analysis - 多空情景分析
 - [x] earnings-call-analysis - 业绩电话会议分析
+- [x] industry-chain-analysis - 产业链分析
+- [x] research-report-reading - 研报阅读与提炼
+- [x] self-critique - Agent自批评机制
+- [x] prompt-engineering - 提示词工程
+- [x] langgraph-workflow/multi-agent-coordination - 多Agent协调
+- [x] langgraph-workflow/error-handling - 错误处理
 
 **finance/**
 - [x] financial-analysis - 详细财务分析框架
 - [x] investment-analysis - 投资分析方法
 - [x] risk-assessment - 风险评估框架
+- [x] financial-report-analysis - 财务报表综合分析
 
 **data-analytics/**
 - [x] data-visualization - 数据可视化指南
+- [x] metric-calculation - 指标计算框架
+
+**common/**
+- [x] swot-analysis - SWOT分析
+- [x] pest-analysis - PEST分析
+- [x] porter-five-forces - 波特五力
+- [x] bcg-matrix - BCG矩阵
+- [x] risk-management - 风险管理
+- [x] data-storytelling - 数据讲故事
+- [x] presentation - 演示设计
+- [x] critical-thinking - 批判性思维
+- [x] decision-making - 决策框架
+- [x] market-analysis - 市场分析
+- [x] competitive-intelligence - 竞争情报
+- [x] benchmarking - 对标管理
+
+**engineering/**
+- [x] ai-health-check - AI健康检查
 
 ---
 
