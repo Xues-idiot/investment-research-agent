@@ -875,4 +875,35 @@ cd frontend && npm run dev
 
 ---
 
-*代号: Rho (ρ) | 2026-03-24 | 第84轮迭代完成*
+## 第85轮 (2026-03-24)
+
+### 完成
+- 研究pest-analysis、peer-comparison、event-driven-investment、value-investment、quantitative-screening Skills
+- 增强SYNTHESIZER_PROMPT：增加PEST分析框架
+  - 政治、经济、社会、技术因素分析
+  - PEST综合评估
+- 增强SYNTHESIZER_PROMPT：增加竞品对比分析
+  - 业务、财务、估值、成长性对比
+  - 综合评分和投资建议
+- 增强SYNTHESIZER_PROMPT：增加事件驱动分析
+  - 事件信息、影响分析
+  - 市场预期、历史类比、催化剂分析
+- 增强FUNDAMENTAL_ANALYST_PROMPT：增加价值投资评估
+  - 筛选维度、必选条件、加分项
+  - 价值投资信号、安全边际评估
+  - 价值陷阱检测
+
+### 学习
+- PEST宏观环境分析框架
+- 竞品对比分析方法
+- 事件驱动投资策略
+- 价值投资和量化筛选
+
+### 下轮计划
+- 继续完善其他agents
+- 研究更多Skills
+- 完善前端组件
+
+---
+
+*代号: Rho (ρ) | 2026-03-24 | 第85轮迭代完成*
