@@ -229,4 +229,33 @@ D:/PM-AI-Workstation/01-ai-agents/
 
 ---
 
-*学习日期: 2026-03-24 第52轮*
+## 第6轮学习 (2026-03-24) - 第53轮迭代
+
+### 新学习的Skills
+
+#### sentiment-monitoring Skill
+- 舆情监控完整框架和模板
+- 情绪分类（乐观/悲观/中性/恐慌/狂热）
+- 舆情异动识别
+- 投资建议生成
+
+#### investment-analysis Skill
+- 完整的投资分析流程
+- DCF估值模板
+- 相对估值模板
+- 风险量化指标（VaR、夏普比率、最大回撤）
+- 投资建议模板
+
+### 应用到Rho项目的改进
+
+1. **prompts.py 增强**:
+   - SENTIMENT_ANALYST_PROMPT: 融入舆情监控框架
+   - NEWS_ANALYST_PROMPT: 融入新闻分析分级和可靠性判断
+
+2. **sentiment.py 增强**:
+   - _build_sentiment_context: 分类整理正负面舆情
+   - 增加新闻来源信息
+
+---
+
+*学习日期: 2026-03-24 第53轮*
