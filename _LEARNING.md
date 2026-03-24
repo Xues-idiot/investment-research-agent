@@ -506,6 +506,30 @@ D:/PM-AI-Workstation/01-ai-agents/
 
 *学习日期: 2026-03-24 第64轮*
 
+---
+
+## 第18轮学习 (2026-03-24) - 第65轮迭代
+
+### 新学习的Skills
+
+#### event-driven-investment Skill
+- 事件驱动投资框架
+- 事件类型分类
+- 市场预期分析
+- 历史类比分析
+
+### 应用到Rho项目的改进
+
+1. **prompts.py 增强**:
+   - NEWS_ANALYST_PROMPT: 增加事件驱动机会分析
+     - 事件类型分类
+     - 市场预期分析
+     - 历史类比分析
+
+---
+
+*学习日期: 2026-03-24 第65轮*
+
 ### 新学习的Skills
 
 #### sentiment-monitoring Skill

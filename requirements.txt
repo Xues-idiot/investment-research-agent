@@ -1,0 +1,26 @@
+# Rho - 投研 Agent
+
+# LangGraph & LangChain
+langgraph>=0.0.15
+langchain>=0.0.270
+langchain-core>=0.0.1
+
+# LLM Clients
+langchain-openai>=0.0.2
+langchain-anthropic>=0.0.1
+langchain-google-genai>=0.0.1
+
+# Data & Finance
+yfinance>=0.2.28
+pandas>=2.0.0
+
+# Web Framework
+flask>=3.0.0
+
+# Utilities
+python-dotenv>=1.0.0
+requests>=2.31.0
+
+# Frontend (development)
+next>=14.0.0
+react>=18.2.0
