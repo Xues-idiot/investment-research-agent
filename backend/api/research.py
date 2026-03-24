@@ -285,11 +285,19 @@ def download_file():
         abort(400)
 
     # 安全检查：只允许下载 exports 目录下的文件
-    if ".." in path or path.startswith("/"):
+    # 防止路径穿越攻击
+    normalized_path = os.path.normpath(path)
+    if ".." in normalized_path or normalized_path.startswith("/") or normalized_path.startswith("\\"):
+        abort(403)
+
+    # 检查文件扩展名，只允许下载特定类型
+    allowed_extensions = {'.pdf', '.html', '.md', '.txt', '.json'}
+    _, ext = os.path.splitext(normalized_path)
+    if ext.lower() not in allowed_extensions:
         abort(403)
 
     export_dir = os.path.join(os.path.dirname(__file__), "..", "..", "exports")
-    return send_from_directory(export_dir, path)
+    return send_from_directory(export_dir, normalized_path)
 
 
 @app.route("/api/notify", methods=["POST"])

@@ -45,6 +45,15 @@ def export_report_to_pdf(
             "output_path": None,
         }
 
+    # 安全检查：防止路径穿越
+    normalized_path = os.path.normpath(output_path)
+    if ".." in normalized_path:
+        return {
+            "success": False,
+            "error": "无效的输出路径",
+            "output_path": None,
+        }
+
     try:
         # 生成 HTML
         html_content = _markdown_to_html(markdown_content, title, author)
@@ -88,6 +97,15 @@ def export_report_to_html(
     Returns:
         导出结果字典
     """
+    # 安全检查：防止路径穿越
+    normalized_path = os.path.normpath(output_path)
+    if ".." in normalized_path:
+        return {
+            "success": False,
+            "error": "无效的输出路径",
+            "output_path": None,
+        }
+
     try:
         html_content = _markdown_to_html(markdown_content, title)
 
@@ -124,6 +142,15 @@ def export_report_to_markdown(
     Returns:
         导出结果字典
     """
+    # 安全检查：防止路径穿越
+    normalized_path = os.path.normpath(output_path)
+    if ".." in normalized_path:
+        return {
+            "success": False,
+            "error": "无效的输出路径",
+            "output_path": None,
+        }
+
     try:
         # 确保输出目录存在
         os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
