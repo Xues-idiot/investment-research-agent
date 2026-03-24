@@ -2,8 +2,6 @@
 
 // StockSearch - 股票搜索组件 (with motion animations)
 
-'use client';
-
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
@@ -32,7 +30,7 @@ export default function StockSearch({ onSearch, loading }: StockSearchProps) {
     >
       <motion.div
         className="flex-1 relative"
-        whileFocusWithin={{ scale: 1.01 }}
+        whileFocus={{ scale: 1.01 }}
       >
         <input
           type="text"

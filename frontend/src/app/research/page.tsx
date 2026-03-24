@@ -1,14 +1,15 @@
 'use client';
 
-// Research Page - 投资研究页面 (支持流式输出)
+// Research Page - 投资研究页面 (支持流式输出+K线图表)
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import StockSearch from '@/components/StockSearch';
 import StreamingSearch from '@/components/StreamingSearch';
 import ReportCard from '@/components/ReportCard';
 import AgentStatus from '@/components/AgentStatus';
 import StreamingProgress from '@/components/StreamingProgress';
+import { KLineChart, TechnicalChart } from '@/components/charts';
 
 interface ResearchResult {
   stockCode: string;
@@ -29,6 +30,27 @@ interface ResearchResult {
   };
 }
 
+interface ChartData {
+  kline: {
+    time: string;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume: number;
+  }[];
+  technical: {
+    time: string;
+    macd: number;
+    macdSignal: number;
+    macdHistogram: number;
+    rsi: number;
+    kdjK: number;
+    kdjD: number;
+    kdjJ: number;
+  }[];
+}
+
 export default function ResearchPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ResearchResult | null>(null);
@@ -36,6 +58,8 @@ export default function ResearchPage() {
   const [currentAgent, setCurrentAgent] = useState<string>('');
   const [currentMessage, setCurrentMessage] = useState<string>('');
   const [useStreaming, setUseStreaming] = useState(true);
+  const [chartData, setChartData] = useState<ChartData | null>(null);
+  const [showCharts, setShowCharts] = useState(false);
 
   // 非流式处理
   const handleResearch = async (stockCode: string) => {
@@ -80,7 +104,23 @@ export default function ResearchPage() {
     setLoading(false);
     setCurrentAgent('');
     setCurrentMessage('');
+    // 获取图表数据
+    fetchChartData(data.stockCode);
   }, []);
+
+  // 获取图表数据
+  const fetchChartData = async (stockCode: string) => {
+    try {
+      const response = await fetch(`http://localhost:8001/api/stock/chart/${stockCode}`);
+      const data = await response.json();
+      if (data.success) {
+        setChartData(data.data);
+        setShowCharts(true);
+      }
+    } catch (err) {
+      console.error('Failed to fetch chart data:', err);
+    }
+  };
 
   // 流式错误回调
   const handleStreamError = useCallback((errorMsg: string) => {
@@ -227,6 +267,32 @@ export default function ResearchPage() {
               transition={{ duration: 0.5 }}
             >
               <ReportCard report={result} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Charts Section */}
+        <AnimatePresence>
+          {showCharts && chartData && result && (
+            <motion.div
+              className="mt-8 space-y-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              {/* K Line Chart */}
+              <KLineChart
+                data={chartData.kline}
+                symbol={result.stockCode}
+                height={400}
+              />
+
+              {/* Technical Indicators Chart */}
+              <TechnicalChart
+                data={chartData.technical}
+                symbol={result.stockCode}
+                height={350}
+              />
             </motion.div>
           )}
         </AnimatePresence>

@@ -74,7 +74,7 @@ export default function StreamingSearch({ onProgress, onComplete, onError }: Str
     >
       <motion.div
         className="flex-1 relative"
-        whileFocusWithin={{ scale: 1.01 }}
+        whileFocus={{ scale: 1.01 }}
       >
         <input
           type="text"

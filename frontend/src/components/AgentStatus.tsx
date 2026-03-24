@@ -2,8 +2,6 @@
 
 // AgentStatus - Agent 状态显示组件 (with motion animations)
 
-'use client';
-
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 

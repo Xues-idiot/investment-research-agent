@@ -2,8 +2,6 @@
 
 // ReportCard - 投资简报卡片组件 (with motion animations)
 
-'use client';
-
 import { motion } from 'framer-motion';
 import { cn, getRiskColor } from '@/lib/utils';
 
