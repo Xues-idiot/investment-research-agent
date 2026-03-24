@@ -729,4 +729,33 @@ D:/PM-AI-Workstation/01-ai-agents/
 
 ---
 
-*学习日期: 2026-03-24 第71轮*
+## 第24轮学习 (2026-03-24) - 第72轮迭代
+
+### 新学习的Skills
+
+#### yield-curve-analysis Skill
+- 收益率曲线分析框架
+- 曲线形态分析（正常/平坦/倒挂）
+- 利差分析和期限结构
+- 经济预测和市场影响
+
+#### time-series-analysis Skill
+- 时间序列分析框架
+- 趋势预测（ARIMA/Prophet/LSTM）
+- 季节性分析和异常检测
+- 周期识别
+
+### 应用到Rho项目的改进
+
+1. **prompts.py 增强**:
+   - SYNTHESIZER_PROMPT: 宏观环境部分增加收益率曲线分析
+     - 曲线形态和利差
+     - 经济预测和市场影响
+   - TECHNICAL_ANALYST_PROMPT: 增加时间序列参考
+     - 趋势预测
+     - 季节性分析和异常检测
+     - 周期识别
+
+---
+
+*学习日期: 2026-03-24 第72轮*
