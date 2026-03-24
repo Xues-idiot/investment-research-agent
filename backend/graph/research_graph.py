@@ -20,6 +20,7 @@ from ..agents.report_generator import create_report_generator, format_report_mar
 
 # LLM 客户端创建
 from ..llm_client import create_llm_client
+from ..config import config as app_config
 
 
 class ResearchGraph:
@@ -37,7 +38,7 @@ class ResearchGraph:
         deep_think_llm: str = None,
         quick_think_llm: str = None,
         debug: bool = False,
-        config: Dict[str, Any] = None,
+        extra_config: Dict[str, Any] = None,
     ):
         """初始化投研图
 
@@ -46,15 +47,15 @@ class ResearchGraph:
             deep_think_llm: 深度思考模型
             quick_think_llm: 快速思考模型
             debug: 是否调试模式
-            config: 配置字典
+            extra_config: 额外配置字典
         """
         self.debug = debug
-        self.config = config or {}
+        self.extra_config = extra_config or {}
 
-        # 设置默认值
-        self.llm_provider = llm_provider or os.getenv("LLM_PROVIDER", "openai")
-        self.deep_think_llm = deep_think_llm or os.getenv("DEEP_THINK_LLM", "gpt-4")
-        self.quick_think_llm = quick_think_llm or os.getenv("QUICK_THINK_LLM", "gpt-3.5-turbo")
+        # 设置默认值 (使用 app_config.py 配置)
+        self.llm_provider = llm_provider or app_config.LLM_PROVIDER
+        self.deep_think_llm = deep_think_llm or app_config.DEEP_THINK_LLM
+        self.quick_think_llm = quick_think_llm or app_config.QUICK_THINK_LLM
 
         # 创建 LLM 客户端
         self._setup_llms()
@@ -68,15 +69,25 @@ class ResearchGraph:
     def _setup_llms(self):
         """设置 LLM 客户端"""
         try:
+            # MiniMax 需要传递 API key 和 base_url
+            llm_kwargs = {}
+            if self.llm_provider == "minimax":
+                llm_kwargs = {
+                    "api_key": app_config.MINIMAX_API_KEY,
+                    "base_url": app_config.MINIMAX_BASE_URL,
+                }
+
             self.deep_client = create_llm_client(
                 provider=self.llm_provider,
                 model=self.deep_think_llm,
+                **llm_kwargs
             )
             self.deep_thinking_llm = self.deep_client.get_llm()
 
             self.quick_client = create_llm_client(
                 provider=self.llm_provider,
                 model=self.quick_think_llm,
+                **llm_kwargs
             )
             self.quick_thinking_llm = self.quick_client.get_llm()
         except Exception as e:

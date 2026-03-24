@@ -17,6 +17,10 @@ pandas>=2.0.0
 # Web Framework
 flask>=3.0.0
 
+# PDF Export
+weasyprint>=60.0
+markdown>=3.5
+
 # Utilities
 python-dotenv>=1.0.0
 requests>=2.31.0
