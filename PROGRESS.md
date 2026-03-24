@@ -1275,4 +1275,43 @@ cd frontend && npm run dev
 
 ---
 
-*代号: Rho (ρ) | 2026-03-24 | 第101轮迭代完成！*
+---
+
+## 第101-120轮 (2026-03-24) - K线图表和技术分析可视化
+
+### 完成的主要工作
+
+#### 核心功能
+- **KLineChart组件**: 使用lightweight-charts v5实现K线蜡烛图
+- **TechnicalChart组件**: 显示MACD/RSI/KDJ技术指标图表
+- **后端API**: `/api/stock/chart/<stock_code>` 获取K线数据
+- **研究页面集成**: 研究完成后展示K线和技术指标图表
+
+#### 技术改进
+- **Tailwind CSS v4**: 升级postcss.config.js，使用@import语法
+- **lightweight-charts v5 API**: 从addCandlestickSeries迁移到addSeries
+- **framer-motion修复**: whileFocusWithin改为whileFocus
+- **globals.css修复**: @Apply指令改为标准CSS
+
+#### 参考项目
+- **TradingAgents**: 学习了K线可视化实现（39k stars项目）
+
+#### 新增文件
+- `backend/api/stock_chart.py` - Flask K线数据API
+- `frontend/src/components/charts/KLineChart.tsx` - K线图表组件
+- `frontend/src/components/charts/TechnicalChart.tsx` - 技术指标图表
+- `frontend/src/components/charts/index.ts` - 组件导出
+- `frontend/tsconfig.json` - TypeScript路径别名配置
+
+#### Bug修复
+- AgentStatus.tsx: 修复重复'use client'声明
+- ReportCard.tsx: 修复重复'use client'声明
+- StockSearch.tsx: 修复framer-motion whileFocus属性
+
+### 下轮计划
+- 继续迭代优化
+- 完善前端交互体验
+
+---
+
+*代号: Rho (ρ) | 2026-03-24 | 第101-120轮完成！K线图表和技术分析可视化已实现*
