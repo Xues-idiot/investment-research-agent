@@ -359,6 +359,31 @@ D:/PM-AI-Workstation/01-ai-agents/
 
 *学习日期: 2026-03-24 第58轮*
 
+---
+
+## 第12轮学习 (2026-03-24) - 第59轮迭代
+
+### 新学习的Skills
+
+#### financial-statement-analysis Skill
+- 财务报表分析框架
+- 三表分析（利润表、资产负债表、现金流量表）
+- 财务风险信号检查清单
+- 多年趋势分析
+
+### 应用到Rho项目的改进
+
+1. **prompts.py 增强**:
+   - FUNDAMENTAL_ANALYST_PROMPT: 增加财务风险信号检查清单
+     - 应收账款异常增长检查
+     - 存货积压检查
+     - 现金流与利润背离检查
+     - 商誉减值风险检查
+
+---
+
+*学习日期: 2026-03-24 第59轮*
+
 ### 新学习的Skills
 
 #### sentiment-monitoring Skill
