@@ -458,6 +458,31 @@ D:/PM-AI-Workstation/01-ai-agents/
 
 *学习日期: 2026-03-24 第62轮*
 
+---
+
+## 第16轮学习 (2026-03-24) - 第63轮迭代
+
+### 新学习的Skills
+
+#### portfolio-construction Skill
+- 投资组合构建框架
+- 仓位管理（单股仓位限制、行业配置）
+- 止损机制
+- 再平衡规则
+- 组合评估指标（夏普比率、最大回撤、卡玛比率）
+
+### 应用到Rho项目的改进
+
+1. **prompts.py 增强**:
+   - RISK_EVALUATOR_PROMPT: 增加投资组合参考
+     - 仓位限制建议
+     - 止损机制
+     - 分散投资建议
+
+---
+
+*学习日期: 2026-03-24 第63轮*
+
 ### 新学习的Skills
 
 #### sentiment-monitoring Skill
