@@ -629,4 +629,39 @@ D:/PM-AI-Workstation/01-ai-agents/
 
 ---
 
-*学习日期: 2026-03-24 第68轮*
+## 第21轮学习 (2026-03-24) - 第69轮迭代
+
+### 新学习的Skills
+
+#### esg-analysis Skill
+- ESG分析框架
+- 环境(E)、社会(S)、治理(G)三个维度
+- ESG评级体系
+- 争议事件检测
+
+#### options-analysis Skill
+- 期权分析框架
+- Black-Scholes定价模型
+- Greeks（Delta、Gamma、Theta、Vega）
+- 隐含波动率分析
+
+#### langgraph-workflow/multi-agent-coordination Skill
+- 多Agent协调机制
+- 状态机设计
+- 路由逻辑
+- 错误处理
+
+### 应用到Rho项目的改进
+
+1. **prompts.py 增强**:
+   - SYNTHESIZER_PROMPT: 增加ESG评估
+     - 环境/社会/治理三个维度
+     - ESG评级和争议事件
+   - RISK_EVALUATOR_PROMPT: 增加期权分析框架
+     - Greeks参考表格
+     - 隐含波动率分析
+     - 风险评估
+
+---
+
+*学习日期: 2026-03-24 第69轮*
