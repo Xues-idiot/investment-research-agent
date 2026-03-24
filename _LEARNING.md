@@ -483,6 +483,29 @@ D:/PM-AI-Workstation/01-ai-agents/
 
 *学习日期: 2026-03-24 第63轮*
 
+---
+
+## 第17轮学习 (2026-03-24) - 第64轮迭代
+
+### 新学习的Skills
+
+#### quantitative-screening Skill
+- 量化筛选框架
+- 筛选维度设计（估值、成长、质量、流动性）
+- 阈值设定
+- 回测验证
+
+### 应用到Rho项目的改进
+
+1. **prompts.py 增强**:
+   - RISK_EVALUATOR_PROMPT: 增加量化筛选参考
+     - 筛选维度表格
+     - 必选条件清单
+
+---
+
+*学习日期: 2026-03-24 第64轮*
+
 ### 新学习的Skills
 
 #### sentiment-monitoring Skill
