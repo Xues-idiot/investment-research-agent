@@ -1236,4 +1236,43 @@ cd frontend && npm run dev
 
 ---
 
-*代号: Rho (ρ) | 2026-03-24 | 第100轮迭代完成！*
+## 第101轮 (2026-03-24) - Bug修复
+
+### 发现并修复的Bug
+
+#### Bug 1: news.py 使用不存在的 state 字段
+- **文件**: `backend/agents/news.py`
+- **问题**: 第18行使用 `state.get("company_name", stock_code)` 但 ResearchState 中没有 `company_name` 字段
+- **修复**: 改为使用 `stock_code` 代替
+
+#### Bug 2: sentiment.py 使用不存在的 state 字段
+- **文件**: `backend/agents/sentiment.py`
+- **问题**: 第18行同样使用 `state.get("company_name", stock_code)`
+- **修复**: 改为使用 `stock_code` 代替
+
+#### Bug 3: report_generator.py 使用不存在的 state 字段
+- **文件**: `backend/agents/report_generator.py`
+- **问题**: `format_report_markdown` 函数使用 `state.get("company_name", stock_code)`
+- **修复**: 改为使用 `stock_code` 代替
+
+### 审查的其他文件
+- research_state.py - 状态定义正确
+- supervisor.py - 调度逻辑正确
+- synthesizer.py - 综合报告逻辑正确
+- fundamental.py - 基本面分析逻辑正确
+- technical.py - 技术分析逻辑正确
+- risk_evaluator.py - 风险评估逻辑正确
+- graph/research_graph.py - LangGraph 编排结构正确
+- api/research.py - REST API 正确处理 company_name
+- tools/financial_data.py - 财务数据获取正确
+- tools/news_search.py - 新闻搜索正确
+- streaming.py - SSE 流式接口（模拟进度模式）
+
+### 下轮计划
+- 继续代码优化
+- 完善文档
+- 验证修复效果
+
+---
+
+*代号: Rho (ρ) | 2026-03-24 | 第101轮迭代完成！*

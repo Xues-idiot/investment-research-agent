@@ -131,7 +131,8 @@ def format_report_markdown(state: dict) -> str:
         Markdown 格式的简报
     """
     stock_code = state.get("company_of_interest", "")
-    stock_name = state.get("company_name", stock_code)
+    # company_name 不存在于 state，使用 stock_code 代替
+    stock_name = stock_code
     report = state.get("final_report", "")
     risk = state.get("risk_assessment", {})
     confidence = state.get("confidence", 0.5)

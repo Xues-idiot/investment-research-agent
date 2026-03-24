@@ -15,7 +15,8 @@ def create_news_analyst(llm):
     def news_analyst_node(state: dict) -> dict:
         """新闻分析节点"""
         stock_code = state.get("company_of_interest", "")
-        stock_name = state.get("company_name", stock_code)
+        # company_name 不存在于 state，使用 stock_code 代替
+        stock_name = stock_code
 
         # 获取新闻和公告
         news_data = search_news(stock_code, stock_name, days=14)
