@@ -664,4 +664,40 @@ D:/PM-AI-Workstation/01-ai-agents/
 
 ---
 
-*学习日期: 2026-03-24 第69轮*
+## 第22轮学习 (2026-03-24) - 第70轮迭代
+
+### 新学习的Skills
+
+#### research-report-reading Skill
+- 研报阅读与提炼
+- 研报筛选和快速浏览
+- 核心观点提取
+- 研报质量评估
+
+#### portfolio-tracking Skill
+- 组合跟踪框架
+- 持仓同步和盈亏计算
+- 风险指标计算
+- 收益归因分析
+
+#### continuous-improvement Skill
+- 持续优化机制
+- 反馈收集和问题分类
+- 根因定位和优化方案
+- 效果验证
+
+### 应用到Rho项目的改进
+
+1. **prompts.py 增强**:
+   - FUNDAMENTAL_ANALYST_PROMPT: 增加券商研报参考
+     - 目标价和评级
+     - 核心观点提取
+     - 研报质量评估
+   - RISK_EVALUATOR_PROMPT: 增加组合跟踪框架
+     - 组合概览和持仓明细
+     - 风险指标
+     - 收益归因和预警事项
+
+---
+
+*学习日期: 2026-03-24 第70轮*
