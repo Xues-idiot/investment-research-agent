@@ -335,6 +335,30 @@ D:/PM-AI-Workstation/01-ai-agents/
 
 *学习日期: 2026-03-24 第57轮*
 
+---
+
+## 第11轮学习 (2026-03-24) - 第58轮迭代
+
+### 新学习的Skills
+
+#### a-share-market-analysis Skill
+- A股市场分析框架
+- 宏观分析、资金流向、市场情绪、板块轮动
+- 市场分析报告模板
+- 配置建议
+
+### 应用到Rho项目的改进
+
+1. **prompts.py 增强**:
+   - SYNTHESIZER_PROMPT: 增加市场环境参考和板块影响
+     - 大盘趋势、市场情绪、资金流向
+     - 北向资金、主力资金
+     - 板块走势和轮动
+
+---
+
+*学习日期: 2026-03-24 第58轮*
+
 ### 新学习的Skills
 
 #### sentiment-monitoring Skill
