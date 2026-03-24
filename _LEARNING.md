@@ -408,6 +408,30 @@ D:/PM-AI-Workstation/01-ai-agents/
 
 *学习日期: 2026-03-24 第60轮*
 
+---
+
+## 第14轮学习 (2026-03-24) - 第61轮迭代
+
+### 新学习的Skills
+
+#### growth-investment Skill
+- 成长投资分析框架
+- 赛道评估（行业空间、增速、渗透率）
+- 增速分析（CAGR、增长质量）
+- 增长持续性判断
+
+### 应用到Rho项目的改进
+
+1. **prompts.py 增强**:
+   - SYNTHESIZER_PROMPT: 增加成长投资评估
+     - 赛道评估
+     - 增速分析
+     - 增长持续性
+
+---
+
+*学习日期: 2026-03-24 第61轮*
+
 ### 新学习的Skills
 
 #### sentiment-monitoring Skill
