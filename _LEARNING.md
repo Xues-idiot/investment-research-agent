@@ -432,6 +432,32 @@ D:/PM-AI-Workstation/01-ai-agents/
 
 *学习日期: 2026-03-24 第61轮*
 
+---
+
+## 第15轮学习 (2026-03-24) - 第62轮迭代
+
+### 新学习的Skills
+
+#### sec-filing-analysis Skill
+- SEC Filing分析框架
+- MD&A分析
+- 重大变更检测
+- 时间线分析
+
+#### pharma-analysis Skill
+- 制药行业分析框架
+- 管线分析
+- 政策影响（带量采购）
+
+### 应用到Rho项目的改进
+
+- 研究announcement-analysis Skill增强公告分析
+- 继续完善prompt模板
+
+---
+
+*学习日期: 2026-03-24 第62轮*
+
 ### 新学习的Skills
 
 #### sentiment-monitoring Skill
