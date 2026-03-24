@@ -1284,4 +1284,34 @@ D:/PM-AI-Workstation/01-ai-agents/
 
 ---
 
-*学习日期: 2026-03-24 第91轮*
+## 第44轮学习 (2026-03-24) - 第92轮迭代
+
+### 新学习的Skills
+
+#### self-critique Skill
+- Agent自批评机制
+- 多阶段推理循环
+- Critic审查输出格式
+- 迭代优化流程
+
+#### prompt-engineering Skill
+- 投研Agent提示词工程
+- 系统提示词模板设计
+- 用户请求模板设计
+
+#### stock-data-api Skill
+- A股数据源集成
+- 多数据源配置（akshare/tushare/东方财富）
+- 统一数据接口设计
+
+### 应用到Rho项目的改进
+
+1. **prompts.py 增强**:
+   - SYNTHESIZER_PROMPT: 增强自批评循环机制
+     - 迭代流程（初稿→批评→修订→再审查）
+     - Critic审查输出格式（JSON结构）
+     - 审查维度扩展
+
+---
+
+*学习日期: 2026-03-24 第92轮*
