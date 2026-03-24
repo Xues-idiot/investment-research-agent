@@ -895,4 +895,22 @@ D:/PM-AI-Workstation/01-ai-agents/
 
 ---
 
-*学习日期: 2026-03-24 第78轮*
+## 第31轮学习 (2026-03-24) - 第79轮迭代
+
+### 新学习的Skills
+
+#### swot-analysis Skill
+- SWOT分析框架
+- 优势、劣势、机会、威胁分析
+- SO、WO、ST、WT策略组合
+
+### 应用到Rho项目的改进
+
+1. **prompts.py 增强**:
+   - SYNTHESIZER_PROMPT: 增加SWOT分析
+     - 优势、劣势、机会、威胁
+     - 策略组合（SO、WO、ST、WT）
+
+---
+
+*学习日期: 2026-03-24 第79轮*
