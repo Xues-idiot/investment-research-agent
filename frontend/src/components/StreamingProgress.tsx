@@ -155,12 +155,17 @@ export default function StreamingProgress({ currentAgent, currentMessage, startT
       </div>
 
       {/* Progress Bar */}
-      <div className="mt-4 h-2 bg-background-500 rounded-full overflow-hidden">
-        <motion.div
-          className="h-full bg-gradient-to-r from-primary-500 to-accent-500"
-          animate={{ width: `${((currentIndex + 1) / agentSteps.length) * 100}%` }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-        />
+      <div className="mt-4 flex items-center gap-3">
+        <div className="flex-1 h-2 bg-background-500 rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-gradient-to-r from-primary-500 to-accent-500"
+            animate={{ width: `${((currentIndex + 1) / agentSteps.length) * 100}%` }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+          />
+        </div>
+        <span className="text-xs text-gray-400 font-mono w-12 text-right">
+          {Math.round(((currentIndex + 1) / agentSteps.length) * 100)}%
+        </span>
       </div>
     </motion.div>
   );
