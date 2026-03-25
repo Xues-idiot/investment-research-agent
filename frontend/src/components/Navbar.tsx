@@ -6,10 +6,10 @@ import { usePathname } from 'next/navigation';
 
 const navItems = [
   { href: '/', label: '首页', icon: '🏠' },
-  { href: '/research', label: '投资研究', icon: '📊' },
-  { href: '/compare', label: '股票对比', icon: '📈' },
-  { href: '/monitor', label: '监控告警', icon: '🔔' },
-  { href: '/portfolio', label: '组合管理', icon: '💼' },
+  { href: '/research', label: '研究', icon: '📊' },
+  { href: '/compare', label: '对比', icon: '📈' },
+  { href: '/monitor', label: '监控', icon: '🔔' },
+  { href: '/portfolio', label: '组合', icon: '💼' },
   { href: '/backtest', label: '回测', icon: '🔬' },
   { href: '/exports', label: '导出', icon: '📤' },
 ];
