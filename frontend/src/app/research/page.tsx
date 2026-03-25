@@ -13,6 +13,7 @@ import ReportCard from '@/components/ReportCard';
 import AgentStatus from '@/components/AgentStatus';
 import StreamingProgress from '@/components/StreamingProgress';
 import { KLineChart, TechnicalChart } from '@/components/charts';
+import { useFavorites } from '@/hooks/useFavorites';
 
 const HISTORY_KEY = 'rho_research_history';
 const MAX_HISTORY = 10;
@@ -75,6 +76,7 @@ export default function ResearchPage() {
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [showCharts, setShowCharts] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const { favorites, removeFavorite } = useFavorites();
 
   // 加载历史记录
   useEffect(() => {
@@ -452,6 +454,54 @@ export default function ResearchPage() {
                           </div>
                         </div>
                       </motion.button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Favorites */}
+              {favorites.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="bg-background-600 rounded-xl border border-background-400 p-6"
+                >
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    ⭐ 我的收藏
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {favorites.map((item, index) => (
+                      <motion.div
+                        key={item.code}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 * index }}
+                        className="p-3 bg-background-500 rounded-lg flex items-center justify-between group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => removeFavorite(item.code)}
+                            className="text-yellow-400 hover:scale-110 transition-transform"
+                            title="取消收藏"
+                          >
+                            ⭐
+                          </button>
+                          <div>
+                            <p className="text-white font-medium">{item.name}</p>
+                            <p className="text-gray-400 text-sm">{item.code}</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setResult(null);
+                            setShowCharts(false);
+                          }}
+                          className="px-3 py-1 bg-primary-500/20 text-primary-400 text-xs rounded hover:bg-primary-500/30 transition-colors"
+                        >
+                          研究
+                        </button>
+                      </motion.div>
                     ))}
                   </div>
                 </motion.div>
