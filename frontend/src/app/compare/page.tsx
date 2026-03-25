@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ComparisonBarChart } from '@/components/charts';
+import { ComparisonBarChart, ComparisonKLineChart } from '@/components/charts';
 
 interface CompareResult {
   stocks: Array<{
@@ -20,10 +20,27 @@ interface CompareResult {
   conclusions: string[];
 }
 
+interface ChartData {
+  charts: Array<{
+    code: string;
+    name: string;
+    kline: Array<{
+      time: string;
+      open: number;
+      high: number;
+      low: number;
+      close: number;
+    }>;
+    current_price: number;
+  }>;
+  count: number;
+}
+
 export default function ComparePage() {
   const [stockCodes, setStockCodes] = useState('600519,000858,000568');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CompareResult | null>(null);
+  const [chartData, setChartData] = useState<ChartData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [rankCriteria, setRankCriteria] = useState('comprehensive');
 
@@ -38,16 +55,31 @@ export default function ComparePage() {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:8001/api/compare', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stock_codes: codes }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        setResult(data.data);
+      // 并行请求对比数据和图表数据
+      const [compareRes, chartRes] = await Promise.all([
+        fetch('http://localhost:8001/api/compare', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stock_codes: codes }),
+        }),
+        fetch('http://localhost:8001/api/compare/charts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stock_codes: codes }),
+        }),
+      ]);
+
+      const compareData = await compareRes.json();
+      const chartResponse = await chartRes.json();
+
+      if (compareData.success) {
+        setResult(compareData.data);
       } else {
-        setError(data.error || '对比失败');
+        setError(compareData.error || '对比失败');
+      }
+
+      if (chartResponse.success) {
+        setChartData(chartResponse.data);
       }
     } catch (err) {
       setError('网络错误');
@@ -182,6 +214,11 @@ export default function ComparePage() {
                 ))}
               </div>
             </div>
+
+            {/* K-line Comparison Chart */}
+            {chartData && chartData.charts.length >= 2 && (
+              <ComparisonKLineChart data={chartData.charts} height={350} />
+            )}
 
             {/* Price Comparison Chart */}
             <div className="bg-background-600 rounded-xl border border-background-400 p-6">

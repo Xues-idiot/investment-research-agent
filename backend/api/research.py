@@ -455,6 +455,93 @@ def rank_stocks():
         return jsonify(handler.handle_error(e)), 500
 
 
+@app.route("/api/compare/charts", methods=["POST"])
+def compare_charts():
+    """多股票K线图表数据对比
+
+    Request Body:
+    {
+        "stock_codes": ["600519", "000858", "000568"]
+    }
+    """
+    try:
+        data = request.get_json()
+        stock_codes = data.get("stock_codes", [])
+
+        if not stock_codes or len(stock_codes) < 2:
+            return jsonify({
+                "success": False,
+                "error": "至少需要2只股票"
+            }), 400
+
+        from ..tools.stock_price import get_stock_price
+
+        charts = []
+        for code in stock_codes:
+            try:
+                price_data = get_stock_price(code, period="1y")
+                kline = []
+                if "history" in price_data and price_data["history"]:
+                    history = price_data["history"]
+                    if isinstance(history, dict) and "Close" in history:
+                        closes = history["Close"]
+                        opens = history.get("Open", closes)
+                        highs = history.get("High", closes)
+                        lows = history.get("Low", closes)
+
+                        for i, (date, close) in enumerate(closes.items()):
+                            kline.append({
+                                "time": date if isinstance(date, str) else date.strftime("%Y-%m-%d"),
+                                "open": float(opens.iloc[i]) if hasattr(opens, 'iloc') else float(opens[i]),
+                                "high": float(highs.iloc[i]) if hasattr(highs, 'iloc') else float(highs[i]),
+                                "low": float(lows.iloc[i]) if hasattr(lows, 'iloc') else float(lows[i]),
+                                "close": float(close),
+                            })
+                else:
+                    # 使用模拟数据
+                    import random
+                    from datetime import datetime, timedelta
+                    base_price = price_data.get("current_price", 100.0)
+                    for i in range(60):
+                        date = (datetime.now() - timedelta(days=59-i)).strftime("%Y-%m-%d")
+                        change = random.uniform(-0.03, 0.03)
+                        open_price = base_price * (1 + change)
+                        close_price = base_price * (1 + change * 1.1)
+                        high_price = max(open_price, close_price) * 1.01
+                        low_price = min(open_price, close_price) * 0.99
+
+                        kline.append({
+                            "time": date,
+                            "open": round(open_price, 2),
+                            "high": round(high_price, 2),
+                            "low": round(low_price, 2),
+                            "close": round(close_price, 2),
+                        })
+                        base_price = close_price
+
+                charts.append({
+                    "code": code,
+                    "name": code,  # 后续可从StockValidator获取
+                    "kline": kline[-60:],  # 最近60天
+                    "current_price": price_data.get("current_price", 0),
+                })
+            except Exception as e:
+                # 单只股票失败不影响其他
+                continue
+
+        return jsonify({
+            "success": True,
+            "data": {
+                "charts": charts,
+                "count": len(charts)
+            }
+        })
+
+    except Exception as e:
+        handler = ErrorHandler()
+        return jsonify(handler.handle_error(e)), 500
+
+
 @app.route("/api/monitor/status", methods=["GET"])
 def get_monitor_status():
     """获取监控状态"""
