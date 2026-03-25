@@ -6,3 +6,4 @@ export { default as EquityCurveChart } from './EquityCurveChart';
 export { default as ComparisonBarChart } from './ComparisonBarChart';
 export { default as ComparisonKLineChart } from './ComparisonKLineChart';
 export { default as AllocationChart } from './AllocationChart';
+export { default as DrawdownChart } from './DrawdownChart';

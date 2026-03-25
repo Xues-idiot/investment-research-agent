@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { EquityCurveChart } from '@/components/charts';
+import { EquityCurveChart, DrawdownChart } from '@/components/charts';
 
 interface BacktestResult {
   stock_code: string;
@@ -353,6 +353,17 @@ export default function BacktestPage() {
                   dailyReturns={result.daily_returns}
                   initialCapital={result.initial_capital}
                   height={300}
+                />
+              </div>
+            )}
+
+            {/* Drawdown Chart */}
+            {result.daily_returns && result.daily_returns.length > 0 && (
+              <div className="bg-background-600 rounded-xl border border-background-400 p-6">
+                <h2 className="text-xl font-semibold text-white mb-4">回撤分析</h2>
+                <DrawdownChart
+                  dailyReturns={result.daily_returns}
+                  height={200}
                 />
               </div>
             )}
