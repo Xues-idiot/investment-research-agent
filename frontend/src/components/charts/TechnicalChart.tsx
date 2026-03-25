@@ -2,9 +2,11 @@
 
 // TechnicalChart - 技术分析图表组件
 // 显示MACD、RSI、KDJ等技术指标 (lightweight-charts v5)
+// 支持折叠展开各指标面板
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createChart, IChartApi, LineSeries, HistogramSeries, Time, LineData, HistogramData } from 'lightweight-charts';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface TechnicalData {
   time: string;
@@ -23,6 +25,57 @@ interface TechnicalChartProps {
   height?: number;
 }
 
+// 可折叠指标面板组件
+function CollapsibleIndicator({
+  title,
+  icon,
+  children,
+  defaultOpen = false,
+}: {
+  title: string;
+  icon: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className="border border-background-400 rounded-lg overflow-hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-4 py-2 bg-background-500 hover:bg-background-400 flex items-center justify-between transition-colors"
+      >
+        <span className="text-sm text-gray-300 flex items-center gap-2">
+          {icon} {title}
+        </span>
+        <motion.svg
+          className="w-4 h-4 text-gray-400"
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </motion.svg>
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="p-3">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export default function TechnicalChart({ data, symbol = 'Stock', height = 300 }: TechnicalChartProps) {
   const macdContainerRef = useRef<HTMLDivElement>(null);
   const rsiContainerRef = useRef<HTMLDivElement>(null);
@@ -31,6 +84,8 @@ export default function TechnicalChart({ data, symbol = 'Stock', height = 300 }:
   const macdChartRef = useRef<IChartApi | null>(null);
   const rsiChartRef = useRef<IChartApi | null>(null);
   const kdjChartRef = useRef<IChartApi | null>(null);
+
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     if (!macdContainerRef.current || !rsiContainerRef.current || !kdjContainerRef.current) return;
@@ -197,42 +252,56 @@ export default function TechnicalChart({ data, symbol = 'Stock', height = 300 }:
         <h3 className="text-lg font-semibold text-white flex items-center gap-2">
           📊 {symbol} 技术指标
         </h3>
-        <div className="flex items-center gap-4 text-xs">
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-0.5 bg-blue-500"></span>
-            <span className="text-gray-400">MACD</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-0.5 bg-purple-500"></span>
-            <span className="text-gray-400">RSI</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-0.5 bg-cyan-500"></span>
-            <span className="text-gray-400">KDJ</span>
-          </span>
+        <button
+          onClick={() => setShowAll(!showAll)}
+          className="px-3 py-1 text-xs bg-background-500 hover:bg-background-400 text-gray-400 hover:text-white rounded transition-colors"
+        >
+          {showAll ? '收起全部' : '展开全部'}
+        </button>
+      </div>
+
+      {/* Quick Summary - Always visible */}
+      <div className="grid grid-cols-3 gap-2 text-center">
+        <div className="bg-background-500 rounded p-2">
+          <div className="text-xs text-gray-400">MACD</div>
+          <div className={`text-sm font-medium ${(data[data.length-1]?.macd ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            {data[data.length-1]?.macd?.toFixed(2) ?? '-'}
+          </div>
+        </div>
+        <div className="bg-background-500 rounded p-2">
+          <div className="text-xs text-gray-400">RSI</div>
+          <div className={`text-sm font-medium ${(() => {
+            const rsi = data[data.length-1]?.rsi ?? 50;
+            return rsi > 70 ? 'text-red-400' : rsi < 30 ? 'text-green-400' : 'text-white';
+          })()}`}>
+            {data[data.length-1]?.rsi?.toFixed(1) ?? '-'}
+          </div>
+        </div>
+        <div className="bg-background-500 rounded p-2">
+          <div className="text-xs text-gray-400">KDJ.K</div>
+          <div className="text-sm font-medium text-white">
+            {data[data.length-1]?.kdjK?.toFixed(1) ?? '-'}
+          </div>
         </div>
       </div>
 
-      {/* MACD */}
-      <div>
-        <div className="text-sm text-gray-400 mb-1">MACD (12,26,9)</div>
-        <div ref={macdContainerRef} className="w-full" />
-      </div>
+      {/* Collapsible Indicator Panels */}
+      <div className="space-y-2">
+        <CollapsibleIndicator title="MACD (12,26,9)" icon="📈" defaultOpen={showAll}>
+          <div ref={macdContainerRef} className="w-full" style={{ height: `${height / 3}px` }} />
+        </CollapsibleIndicator>
 
-      {/* RSI */}
-      <div>
-        <div className="text-sm text-gray-400 mb-1">RSI (14) - 超买:70 超卖:30</div>
-        <div ref={rsiContainerRef} className="w-full" />
-      </div>
+        <CollapsibleIndicator title="RSI (14) - 超买:70 超卖:30" icon="💜" defaultOpen={showAll}>
+          <div ref={rsiContainerRef} className="w-full" style={{ height: `${height / 3}px` }} />
+        </CollapsibleIndicator>
 
-      {/* KDJ */}
-      <div>
-        <div className="text-sm text-gray-400 mb-1">KDJ (9,3,3)</div>
-        <div ref={kdjContainerRef} className="w-full" />
+        <CollapsibleIndicator title="KDJ (9,3,3)" icon="📉" defaultOpen={showAll}>
+          <div ref={kdjContainerRef} className="w-full" style={{ height: `${height / 3}px` }} />
+        </CollapsibleIndicator>
       </div>
 
       <div className="mt-2 text-xs text-gray-500 text-center">
-        指标说明: MACD(趋势)、RSI(动量)、KDJ(随机指标)
+        指标说明: MACD(趋势)、RSI(动量)、KDJ(随机指标) | 点击标题展开/折叠
       </div>
     </div>
   );
