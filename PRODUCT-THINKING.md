@@ -280,11 +280,28 @@ feat(Rho): 产品体验升级 v1.1.0
 **解决：** 改用 fetch + ReadableStream 实现 POST 请求的 SSE
 **影响：** 流式研究功能恢复正常
 
+### 2026-03-25 下午迭代 v3
+
+| 改进 | 决策原因 | 用户价值 |
+|-----|---------|---------|
+| **TechnicalChart折叠** | 技术指标固定占用太多空间 | 用户可选择性查看 |
+
+**TechnicalChart折叠优化：**
+- MACD/RSI/KDJ各指标可独立展开/折叠
+- 快速概览始终可见（最新值）
+- 展开全部按钮
+- 减少页面空间占用
+
+**GitHub仓库创建：**
+- 成功创建 Xues-idiot/investment-research-agent
+- 清理敏感信息（git filter-branch重写历史）
+- 仓库地址：https://github.com/Xues-idiot/investment-research-agent
+
 ### 下一步优先级
 
-1. 🔴 **K线图表交互增强** - 缩放、拖动、十字光标
+1. 🔴 **K线叠加对比** - 对比页面添加多股票K线叠加（需后端批量API）
 2. 🟡 **SSE实时告警** - 监控页面自动更新（需后端配合）
-3. 🟡 **研究报告折叠** - 信息过载，需要折叠展开
+3. 🟡 **Monitor页面SSE** - 告警实时推送（需后端WebSocket支持）
 4. 🟢 **自审查机制** - 后续版本（成本高）
 
 ---
