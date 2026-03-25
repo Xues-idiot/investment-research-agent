@@ -45,15 +45,17 @@ export function useKeyboardShortcuts(shortcuts: Shortcut[], enabled = true) {
 
 // Shortcut display component
 export function ShortcutHint({ shortcuts }: { shortcuts: Shortcut[] }) {
+  if (shortcuts.length === 0) return null;
+
   return (
-    <div className="flex items-center gap-4 text-xs text-gray-500">
+    <div className="flex flex-wrap items-center justify-center gap-3 text-xs">
       {shortcuts.map((s, i) => (
-        <span key={i} className="flex items-center gap-1">
-          {s.ctrl && <kbd className="px-1 py-0.5 bg-background-500 rounded text-gray-400">Ctrl</kbd>}
-          {s.shift && <kbd className="px-1 py-0.5 bg-background-500 rounded text-gray-400">Shift</kbd>}
-          {s.alt && <kbd className="px-1 py-0.5 bg-background-500 rounded text-gray-400">Alt</kbd>}
-          <kbd className="px-1 py-0.5 bg-background-500 rounded text-gray-400">{s.key.toUpperCase()}</kbd>
-          <span className="text-gray-400 ml-1">{s.description}</span>
+        <span key={i} className="flex items-center gap-1.5 px-2 py-1 bg-background-600/50 rounded border border-background-400/50">
+          {s.ctrl && <kbd className="px-1.5 py-0.5 bg-background-500 rounded text-gray-300 font-mono text-[10px]">Ctrl</kbd>}
+          {s.shift && <kbd className="px-1.5 py-0.5 bg-background-500 rounded text-gray-300 font-mono text-[10px]">Shift</kbd>}
+          {s.alt && <kbd className="px-1.5 py-0.5 bg-background-500 rounded text-gray-300 font-mono text-[10px]">Alt</kbd>}
+          <kbd className="px-1.5 py-0.5 bg-primary-500/20 text-primary-400 rounded font-mono text-[10px]">{s.key.toUpperCase()}</kbd>
+          <span className="text-gray-400">{s.description}</span>
         </span>
       ))}
     </div>
