@@ -79,6 +79,7 @@ export default function ResearchPage() {
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [showCharts, setShowCharts] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [historyFilter, setHistoryFilter] = useState('');
   const [researchStartTime, setResearchStartTime] = useState<number>(0);
   const { favorites, removeFavorite } = useFavorites();
   const { toasts, removeToast } = useToast();
@@ -112,6 +113,20 @@ export default function ResearchPage() {
       return updated;
     });
   }, []);
+
+  // 清空历史记录
+  const clearHistory = useCallback(() => {
+    setHistory([]);
+    localStorage.removeItem(HISTORY_KEY);
+  }, []);
+
+  // 过滤后的历史记录
+  const filteredHistory = historyFilter.trim()
+    ? history.filter(h =>
+        h.stockCode.includes(historyFilter.toUpperCase()) ||
+        h.companyName.includes(historyFilter)
+      )
+    : history;
 
   // 从历史恢复
   const loadFromHistory = useCallback((item: HistoryItem) => {
@@ -459,18 +474,40 @@ export default function ResearchPage() {
               </div>
 
               {/* Research History */}
-              {history.length > 0 && (
+              {(history.length > 0 || historyFilter) && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
                   className="bg-background-600 rounded-xl border border-background-400 p-6"
                 >
-                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                    📜 最近研究
-                  </h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                      📜 最近研究
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={historyFilter}
+                        onChange={(e) => setHistoryFilter(e.target.value)}
+                        placeholder="搜索..."
+                        className="px-3 py-1 text-sm bg-background-500 border border-background-400 rounded text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
+                      />
+                      <button
+                        onClick={clearHistory}
+                        className="px-3 py-1 text-xs text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 rounded transition-colors"
+                      >
+                        清空
+                      </button>
+                    </div>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {history.map((item, index) => (
+                    {filteredHistory.length === 0 && historyFilter && (
+                      <p className="text-gray-500 text-sm col-span-full text-center py-4">
+                        没有找到匹配的历史记录
+                      </p>
+                    )}
+                    {filteredHistory.map((item, index) => (
                       <motion.button
                         key={item.stockCode}
                         initial={{ opacity: 0, x: -10 }}
