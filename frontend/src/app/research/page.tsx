@@ -236,6 +236,21 @@ export default function ResearchPage() {
       >
         <h1 className="text-3xl font-bold text-white mb-2">📊 投资研究</h1>
         <p className="text-gray-400">多维度分析股票，生成专业投资研究报告</p>
+
+        {/* Quick Stats */}
+        <div className="flex items-center gap-6 mt-3">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-gray-500">历史:</span>
+            <span className="text-white font-medium">{history.length}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-gray-500">收藏:</span>
+            <span className="text-yellow-400 font-medium">{favorites.length}</span>
+          </div>
+          <div className="text-xs text-gray-500">
+            {useStreaming ? '🚀 流式模式' : '📦 批量模式'}
+          </div>
+        </div>
       </motion.div>
 
       {/* Main Content */}
