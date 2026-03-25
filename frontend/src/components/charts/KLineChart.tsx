@@ -2,7 +2,7 @@
 
 // KLineChart - K线图表组件 (使用TradingView lightweight-charts v5)
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { createChart, IChartApi, CandlestickSeries, HistogramSeries, CandlestickData, HistogramData, Time } from 'lightweight-charts';
 
 interface KLineChartProps {
@@ -22,11 +22,58 @@ interface KLineChartProps {
 export default function KLineChart({ data, symbol = 'Stock', width = 800, height = 400 }: KLineChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const handleResetZoom = useCallback(() => {
     if (chartRef.current) {
       chartRef.current.timeScale().fitContent();
     }
+  }, []);
+
+  const handleFullscreen = useCallback(() => {
+    if (!wrapperRef.current) return;
+
+    if (!document.fullscreenElement) {
+      wrapperRef.current.requestFullscreen().then(() => {
+        setIsFullscreen(true);
+        // Resize chart after entering fullscreen
+        setTimeout(() => {
+          if (chartRef.current && chartContainerRef.current) {
+            chartRef.current.applyOptions({
+              width: chartContainerRef.current.clientWidth,
+              height: window.innerHeight - 100,
+            });
+          }
+        }, 100);
+      }).catch(err => {
+        console.error('Fullscreen error:', err);
+      });
+    } else {
+      document.exitFullscreen().then(() => {
+        setIsFullscreen(false);
+        // Resize chart after exiting fullscreen
+        setTimeout(() => {
+          if (chartRef.current && chartContainerRef.current) {
+            chartRef.current.applyOptions({
+              width: chartContainerRef.current.clientWidth,
+              height,
+            });
+          }
+        }, 100);
+      });
+    }
+  }, [height]);
+
+  // Listen for fullscreen change
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setIsFullscreen(false);
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
   useEffect(() => {
@@ -141,12 +188,19 @@ export default function KLineChart({ data, symbol = 'Stock', width = 800, height
   }, [data, width, height]);
 
   return (
-    <div className="bg-background-600 rounded-lg p-4 border border-background-400">
+    <div ref={wrapperRef} className="bg-background-600 rounded-lg p-4 border border-background-400">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-white flex items-center gap-2">
           📈 {symbol} K线走势图
         </h3>
         <div className="flex items-center gap-3 text-sm">
+          <button
+            onClick={handleFullscreen}
+            className="px-2 py-1 text-xs bg-background-500 hover:bg-background-400 text-gray-400 hover:text-white rounded transition-colors flex items-center gap-1"
+            title={isFullscreen ? '退出全屏' : '全屏'}
+          >
+            {isFullscreen ? '⊠ 退出全屏' : '⛶ 全屏'}
+          </button>
           <button
             onClick={handleResetZoom}
             className="px-2 py-1 text-xs bg-background-500 hover:bg-background-400 text-gray-400 hover:text-white rounded transition-colors"
@@ -164,7 +218,7 @@ export default function KLineChart({ data, symbol = 'Stock', width = 800, height
           </span>
         </div>
       </div>
-      <div ref={chartContainerRef} className="w-full" style={{ height: `${height}px` }} />
+      <div ref={chartContainerRef} className="w-full" style={{ height: `${isFullscreen ? window.innerHeight - 100 : height}px` }} />
       <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
         <span>🖱️ 滚轮缩放 | 拖拽平移 |十字光标查看详情</span>
         <span>数据来源: yfinance | 时间范围: 近1年</span>
