@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import BackToTop from '@/components/BackToTop';
+import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: 'Rho 投研 Agent',
@@ -28,6 +29,7 @@ export default function RootLayout({
         <main className="pt-16">
           {children}
         </main>
+        <Footer />
         <BackToTop />
       </body>
     </html>
