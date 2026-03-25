@@ -127,7 +127,13 @@ class ResearchGraph:
         return mock_node
 
     def _build_graph(self) -> StateGraph:
-        """构建 LangGraph"""
+        """构建 LangGraph - 并行执行版本 (TradingAgents风格)
+
+        流程:
+        START → Supervisor → [4个 Analyst 并行执行]
+                               ↓
+                         Synthesizer → Risk Evaluator → Report Generator → END
+        """
         workflow = StateGraph(ResearchState)
 
         # 添加节点
@@ -140,17 +146,19 @@ class ResearchGraph:
         workflow.add_node("Risk Evaluator", self.risk_evaluator)
         workflow.add_node("Report Generator", self.report_generator)
 
-        # 定义边
+        # 定义边 - 并行执行模式
         # 1. START → Supervisor
         workflow.add_edge(START, "Supervisor")
 
-        # 2. Supervisor → 并行执行 4个 Analyst
+        # 2. Supervisor → 4个 Analyst (并行触发)
+        # 添加4条边，LangGraph会并行执行这4个节点
         workflow.add_edge("Supervisor", "Fundamental Analyst")
         workflow.add_edge("Supervisor", "Sentiment Analyst")
         workflow.add_edge("Supervisor", "News Analyst")
         workflow.add_edge("Supervisor", "Technical Analyst")
 
-        # 3. 4个 Analyst → Synthesizer
+        # 3. 4个 Analyst → Synthesizer (等待所有Analyst完成)
+        # LangGraph的fan-in机制会自动等待所有Analyst完成
         workflow.add_edge("Fundamental Analyst", "Synthesizer")
         workflow.add_edge("Sentiment Analyst", "Synthesizer")
         workflow.add_edge("News Analyst", "Synthesizer")
