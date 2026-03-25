@@ -4,7 +4,20 @@
 
 ---
 
-## [1.1.0] - 2026-03-25 (当前版本)
+## [1.1.1] - 2026-03-25 (当前版本)
+
+### 🐛 Bug修复
+
+- **StreamingSearch SSE修复** - EventSource只支持GET，改用fetch+ReadableStream实现POST请求的SSE
+
+### ✨ 体验优化
+
+- **研究报告折叠优化** - 添加可折叠报告卡片组件
+  - 详细分析(fundamentals/sentiment/news/technical)默认折叠
+  - 综合研判默认展开
+  - 减少信息过载，提升阅读体验
+
+## [1.1.0] - 2026-03-25
 
 ### 🎯 核心改进：产品体验升级
 
