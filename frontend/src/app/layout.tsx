@@ -3,6 +3,7 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 import BackToTop from '@/components/BackToTop';
 import Footer from '@/components/Footer';
+import VersionCheck from '@/components/VersionCheck';
 
 export const metadata: Metadata = {
   title: 'Rho 投研 Agent',
@@ -31,6 +32,7 @@ export default function RootLayout({
         </main>
         <Footer />
         <BackToTop />
+        <VersionCheck />
       </body>
     </html>
   );
