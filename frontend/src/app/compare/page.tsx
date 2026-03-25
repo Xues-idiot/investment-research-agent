@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ComparisonBarChart, ComparisonKLineChart } from '@/components/charts';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface CompareResult {
   stocks: Array<{
@@ -43,6 +44,7 @@ export default function ComparePage() {
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [rankCriteria, setRankCriteria] = useState('comprehensive');
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   const handleCompare = async () => {
     const codes = stockCodes.split(',').map(s => s.trim()).filter(Boolean);
@@ -205,9 +207,18 @@ export default function ComparePage() {
                         <p className="text-white font-medium">{stock.name}</p>
                         <p className="text-gray-400 text-sm">{stock.code}</p>
                       </div>
-                      <span className={`text-sm font-medium ${stock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {stock.change >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => toggleFavorite(stock.code, stock.name)}
+                          className="text-xl hover:scale-110 transition-transform"
+                          title={isFavorite(stock.code) ? '取消收藏' : '添加收藏'}
+                        >
+                          {isFavorite(stock.code) ? '⭐' : '☆'}
+                        </button>
+                        <span className={`text-sm font-medium ${stock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {stock.change >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
+                        </span>
+                      </div>
                     </div>
                     <p className="text-2xl font-bold text-white">¥{stock.price.toFixed(2)}</p>
                   </div>
