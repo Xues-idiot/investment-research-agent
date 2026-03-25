@@ -27,6 +27,9 @@ export default function Navbar() {
             <span className="text-2xl">📈</span>
             <span className="text-xl font-bold text-white">Rho</span>
             <span className="text-sm text-gray-400 hidden sm:inline">投研Agent</span>
+            <span className="text-xs px-1.5 py-0.5 bg-primary-500/20 text-primary-400 rounded hidden lg:inline">
+              v1.4
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
