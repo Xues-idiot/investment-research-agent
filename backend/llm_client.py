@@ -102,11 +102,14 @@ class LLMClient:
         api_key = self.kwargs.get("api_key") or os.getenv("MINIMAX_API_KEY")
         base_url = self.kwargs.get("base_url") or os.getenv("MINIMAX_BASE_URL", "https://api.minimaxi.com/anthropic")
 
+        # 移除已单独处理的参数，避免重复传递
+        kwargs = {k: v for k, v in self.kwargs.items() if k not in ("api_key", "base_url")}
+
         return ChatOpenAI(
             model=self.model,
             api_key=api_key,
             base_url=base_url,
-            **self.kwargs
+            **kwargs
         )
 
 
