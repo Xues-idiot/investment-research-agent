@@ -101,12 +101,15 @@ export default function ReportCard({ report }: ReportCardProps) {
 
   // 分享报告
   const handleShare = useCallback(async () => {
+    const shareUrl = `${window.location.origin}/research?code=${report.stockCode}`;
+    const shareText = `${report.companyName} (${report.stockCode}) 投资简报 - 置信度: ${(report.confidence * 100).toFixed(0)}%, 风险: ${report.riskAssessment.level}`;
+
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${report.companyName} (${report.stockCode}) 投资简报`,
-          text: `置信度: ${(report.confidence * 100).toFixed(0)}%, 风险等级: ${report.riskAssessment.level}`,
-          url: window.location.href,
+          title: `${report.companyName} 投资简报`,
+          text: shareText,
+          url: shareUrl,
         });
       } catch (err) {
         if ((err as Error).name !== 'AbortError') {
@@ -115,7 +118,7 @@ export default function ReportCard({ report }: ReportCardProps) {
       }
     } else {
       // Fallback: 复制链接
-      navigator.clipboard.writeText(window.location.href);
+      navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
