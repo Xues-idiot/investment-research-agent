@@ -5,6 +5,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import StockSearch from '@/components/StockSearch';
+import StockSearchAutocomplete from '@/components/StockSearchAutocomplete';
 import StreamingSearch from '@/components/StreamingSearch';
 import ReportCard from '@/components/ReportCard';
 import AgentStatus from '@/components/AgentStatus';
@@ -245,7 +246,7 @@ export default function ResearchPage() {
               onError={handleStreamError}
             />
           ) : (
-            <StockSearch onSearch={handleResearch} loading={loading} />
+            <StockSearchAutocomplete onSearch={handleResearch} loading={loading} />
           )}
         </motion.div>
 
