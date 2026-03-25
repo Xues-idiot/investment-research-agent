@@ -56,6 +56,7 @@ export default function MonitorPage() {
   const [refreshInterval, setRefreshInterval] = useState(30); // 秒
   const [marketOpen, setMarketOpen] = useState(false);
   const [marketStatusTime, setMarketStatusTime] = useState<Date>(new Date());
+  const [backendOnline, setBackendOnline] = useState(true);
   const autoRefreshRef = useRef<NodeJS.Timeout | null>(null);
 
   // 检查市场是否开盘
@@ -88,30 +89,45 @@ export default function MonitorPage() {
   const fetchStatus = async () => {
     try {
       const response = await fetch('http://localhost:8001/api/monitor/status');
-      const data = await response.json();
-      if (data.success) {
-        setStatus(data.data);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setStatus(data.data);
+          setBackendOnline(true);
+        }
+      } else {
+        setBackendOnline(false);
       }
-    } catch (err) {
-      console.error('Failed to fetch status:', err);
+    } catch {
+      setBackendOnline(false);
     }
   };
 
   const fetchAlerts = async () => {
     try {
       const response = await fetch('http://localhost:8001/api/monitor/alerts');
-      const data = await response.json();
-      if (data.success) {
-        const backendAlerts = data.data.alerts.map((a: Alert) => ({
-          ...a,
-          id: `${a.stock_code}_${a.alert_type}_${Date.now()}`
-        }));
-        setAlerts(backendAlerts);
-        saveAlertsToStorage(backendAlerts);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          const backendAlerts = data.data.alerts.map((a: Alert) => ({
+            ...a,
+            id: `${a.stock_code}_${a.alert_type}_${Date.now()}`
+          }));
+          setAlerts(backendAlerts);
+          saveAlertsToStorage(backendAlerts);
+          setBackendOnline(true);
+        }
+      } else {
+        setBackendOnline(false);
+        // 后端离线，从localStorage加载
+        const stored = loadAlertsFromStorage();
+        if (stored.length > 0) {
+          setAlerts(stored);
+        }
       }
-    } catch (err) {
-      console.error('Failed to fetch alerts:', err);
-      // 如果后端失败，从localStorage加载
+    } catch {
+      setBackendOnline(false);
+      // 后端离线，从localStorage加载
       const stored = loadAlertsFromStorage();
       if (stored.length > 0) {
         setAlerts(stored);
@@ -335,6 +351,12 @@ export default function MonitorPage() {
               }`}>
                 <span className={`w-2 h-2 rounded-full ${marketOpen ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`} />
                 <span className="font-medium">{marketOpen ? '开盘中' : '已休市'}</span>
+              </div>
+              <div className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
+                backendOnline ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
+              }`}>
+                <span className={`w-2 h-2 rounded-full ${backendOnline ? 'bg-green-400' : 'bg-yellow-400 animate-pulse'}`} />
+                <span className="font-medium">{backendOnline ? '后端在线' : '后端离线'}</span>
               </div>
               <span className="text-xs text-gray-500">
                 更新: {marketStatusTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
