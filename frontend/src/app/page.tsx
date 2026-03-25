@@ -2,6 +2,15 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+
+const HISTORY_KEY = 'rho_research_history';
+const ALERTS_KEY = 'rho_monitor_alerts';
+
+interface QuickStats {
+  researchCount: number;
+  alertsCount: number;
+}
 
 const features = [
   {
@@ -49,10 +58,25 @@ const features = [
 ];
 
 export default function HomePage() {
+  const [stats, setStats] = useState<QuickStats>({ researchCount: 0, alertsCount: 0 });
+
+  useEffect(() => {
+    try {
+      const history = localStorage.getItem(HISTORY_KEY);
+      const alerts = localStorage.getItem(ALERTS_KEY);
+      setStats({
+        researchCount: history ? JSON.parse(history).length : 0,
+        alertsCount: alerts ? JSON.parse(alerts).length : 0,
+      });
+    } catch (e) {
+      console.error('Failed to load stats:', e);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-background-500">
       {/* Hero Section */}
-      <section className="py-20 px-4 text-center">
+      <section className="py-16 px-4 text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -67,6 +91,48 @@ export default function HomePage() {
         </motion.div>
       </section>
 
+      {/* Quick Stats */}
+      <section className="max-w-7xl mx-auto px-4 pb-8 -mt-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="bg-background-600 rounded-xl border border-background-400 p-4 text-center"
+          >
+            <div className="text-3xl font-bold text-primary-400">{stats.researchCount}</div>
+            <div className="text-gray-400 text-sm">研究记录</div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.15 }}
+            className="bg-background-600 rounded-xl border border-background-400 p-4 text-center"
+          >
+            <div className="text-3xl font-bold text-green-400">{stats.alertsCount}</div>
+            <div className="text-gray-400 text-sm">监控告警</div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="bg-background-600 rounded-xl border border-background-400 p-4 text-center"
+          >
+            <div className="text-3xl font-bold text-purple-400">6</div>
+            <div className="text-gray-400 text-sm">功能模块</div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.25 }}
+            className="bg-background-600 rounded-xl border border-background-400 p-4 text-center"
+          >
+            <div className="text-3xl font-bold text-yellow-400">v1.3</div>
+            <div className="text-gray-400 text-sm">当前版本</div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Features Grid */}
       <section className="max-w-7xl mx-auto px-4 pb-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -75,7 +141,7 @@ export default function HomePage() {
               key={feature.href}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+              transition={{ duration: 0.5, delay: 0.1 * index }}
             >
               <Link href={feature.href}>
                 <div className="group h-full bg-background-600 rounded-xl border border-background-400 p-6 hover:border-primary-500/50 transition-all cursor-pointer hover:shadow-lg hover:shadow-primary-500/10">
