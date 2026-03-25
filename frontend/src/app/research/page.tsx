@@ -133,34 +133,17 @@ export default function ResearchPage() {
   return (
     <div className="min-h-screen bg-background-500">
       {/* Header */}
-      <motion.header
-        className="bg-background-600 border-b border-background-400"
+      <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        className="mb-8"
       >
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <motion.h1
-            className="text-3xl font-bold text-white"
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            📊 Rho 投研 Agent
-          </motion.h1>
-          <motion.p
-            className="mt-2 text-gray-400"
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            智能股票投资研究助手
-          </motion.p>
-        </div>
-      </motion.header>
+        <h1 className="text-3xl font-bold text-white mb-2">📊 投资研究</h1>
+        <p className="text-gray-400">多维度分析股票，生成专业投资研究报告</p>
+      </motion.div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4">
         {/* Mode Toggle */}
         <motion.div
           className="mb-4 flex items-center gap-4"
@@ -333,20 +316,6 @@ export default function ResearchPage() {
           )}
         </AnimatePresence>
       </main>
-
-      {/* Footer */}
-      <motion.footer
-        className="bg-background-600 border-t border-background-400 mt-auto"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-      >
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <p className="text-center text-gray-500 text-sm">
-            Rho 投研 Agent | 投资有风险，入市需谨慎
-          </p>
-        </div>
-      </motion.footer>
     </div>
   );
 }
