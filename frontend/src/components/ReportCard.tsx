@@ -2,7 +2,7 @@
 
 // ReportCard - 投资简报卡片组件 (with motion animations)
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn, getRiskColor } from '@/lib/utils';
 
@@ -89,7 +89,37 @@ function CollapsibleCard({
 
 export default function ReportCard({ report }: ReportCardProps) {
   const [showDetails, setShowDetails] = useState(false);
+  const [copied, setCopied] = useState(false);
   const riskColor = getRiskColor(report.riskAssessment.level);
+
+  // 复制股票代码
+  const handleCopyCode = useCallback(() => {
+    navigator.clipboard.writeText(report.stockCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [report.stockCode]);
+
+  // 分享报告
+  const handleShare = useCallback(async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${report.companyName} (${report.stockCode}) 投资简报`,
+          text: `置信度: ${(report.confidence * 100).toFixed(0)}%, 风险等级: ${report.riskAssessment.level}`,
+          url: window.location.href,
+        });
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          console.error('Share failed:', err);
+        }
+      }
+    } else {
+      // Fallback: 复制链接
+      navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }, [report]);
 
   return (
     <div className="space-y-6">
@@ -136,6 +166,22 @@ export default function ReportCard({ report }: ReportCardProps) {
                 置信度 {(report.confidence * 100).toFixed(0)}%
               </div>
             </motion.div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 mt-3">
+            <button
+              onClick={handleCopyCode}
+              className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded text-sm text-white transition-colors flex items-center gap-1"
+            >
+              {copied ? '✓ 已复制' : '📋 复制代码'}
+            </button>
+            <button
+              onClick={handleShare}
+              className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded text-sm text-white transition-colors flex items-center gap-1"
+            >
+              🔗 分享
+            </button>
           </div>
         </motion.div>
 
