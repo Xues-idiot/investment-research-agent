@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import StockSearch from '@/components/StockSearch';
 import StockSearchAutocomplete from '@/components/StockSearchAutocomplete';
 import StreamingSearch from '@/components/StreamingSearch';
+import { ResearchSkeleton } from '@/components/SkeletonLoader';
 import ReportCard from '@/components/ReportCard';
 import AgentStatus from '@/components/AgentStatus';
 import StreamingProgress from '@/components/StreamingProgress';
@@ -306,6 +307,19 @@ export default function ResearchPage() {
               transition={{ duration: 0.5 }}
             >
               <ReportCard report={result} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Loading Skeleton */}
+        <AnimatePresence>
+          {loading && !useStreaming && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <ResearchSkeleton />
             </motion.div>
           )}
         </AnimatePresence>
