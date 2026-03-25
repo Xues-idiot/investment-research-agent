@@ -121,6 +121,71 @@ export default function ReportCard({ report }: ReportCardProps) {
     }
   }, [report]);
 
+  // 导出JSON
+  const handleExportJSON = useCallback(() => {
+    const data = {
+      stockCode: report.stockCode,
+      companyName: report.companyName,
+      confidence: report.confidence,
+      riskAssessment: report.riskAssessment,
+      reports: report.reports,
+      finalReport: report.finalReport,
+      generatedAt: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${report.stockCode}_${report.companyName}_研究报告.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [report]);
+
+  // 导出Markdown
+  const handleExportMarkdown = useCallback(() => {
+    const md = `# ${report.companyName} (${report.stockCode}) 投资研究报告
+
+## 基本信息
+- **股票代码**: ${report.stockCode}
+- **公司名称**: ${report.companyName}
+- **置信度**: ${(report.confidence * 100).toFixed(0)}%
+- **风险等级**: ${report.riskAssessment.level}
+- **风险评分**: ${report.riskAssessment.score}/100
+- **生成时间**: ${new Date().toLocaleString('zh-CN')}
+
+## 风险因素
+${report.riskAssessment.factors.map(f => `- ${f}`).join('\n')}
+
+## 基本面分析
+${report.reports.fundamentals}
+
+## 情绪分析
+${report.reports.sentiment}
+
+## 新闻分析
+${report.reports.news}
+
+## 技术分析
+${report.reports.technical}
+
+## 综合分析
+${report.reports.synthesis}
+
+## 投资总结
+${report.finalReport}
+
+---
+*本报告由 Rho 投研Agent自动生成*
+`;
+    const blob = new Blob([md], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${report.stockCode}_${report.companyName}_研究报告.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [report]);
+
   return (
     <div className="space-y-6">
       {/* Main Report Card */}
@@ -181,6 +246,19 @@ export default function ReportCard({ report }: ReportCardProps) {
               className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded text-sm text-white transition-colors flex items-center gap-1"
             >
               🔗 分享
+            </button>
+            <div className="h-4 w-px bg-white/30 mx-1" />
+            <button
+              onClick={handleExportJSON}
+              className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded text-sm text-white transition-colors flex items-center gap-1"
+            >
+              📥 JSON
+            </button>
+            <button
+              onClick={handleExportMarkdown}
+              className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded text-sm text-white transition-colors flex items-center gap-1"
+            >
+              📥 MD
             </button>
           </div>
         </motion.div>
