@@ -2,7 +2,8 @@
 
 // ReportCard - 投资简报卡片组件 (with motion animations)
 
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn, getRiskColor } from '@/lib/utils';
 
 interface ReportCardProps {
@@ -26,7 +27,68 @@ interface ReportCardProps {
   };
 }
 
+// 可折叠报告卡片
+function CollapsibleCard({
+  title,
+  icon,
+  content,
+  defaultOpen = false,
+  delay = 0.6,
+}: {
+  title: string;
+  icon: string;
+  content: string;
+  defaultOpen?: boolean;
+  delay?: number;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <motion.div
+      className="bg-background-600 rounded-lg border border-background-400 overflow-hidden"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay }}
+    >
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-6 py-4 flex items-center justify-between hover:bg-background-500/50 transition-colors"
+      >
+        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+          {icon} {title}
+        </h3>
+        <motion.svg
+          className="w-5 h-5 text-gray-400"
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </motion.svg>
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-6 pb-4 text-gray-400 text-sm whitespace-pre-wrap">
+              {content || '暂无数据'}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
 export default function ReportCard({ report }: ReportCardProps) {
+  const [showDetails, setShowDetails] = useState(false);
   const riskColor = getRiskColor(report.riskAssessment.level);
 
   return (
@@ -103,89 +165,74 @@ export default function ReportCard({ report }: ReportCardProps) {
         </motion.div>
       </motion.div>
 
-      {/* Detailed Reports Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Fundamentals */}
-        <motion.div
-          className="bg-background-600 rounded-lg p-6 border border-background-400"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          whileHover={{ scale: 1.01 }}
-        >
-          <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-            📈 基本面分析
-          </h3>
-          <p className="text-gray-400 text-sm whitespace-pre-wrap">
-            {report.reports.fundamentals || '暂无数据'}
-          </p>
-        </motion.div>
-
-        {/* Sentiment */}
-        <motion.div
-          className="bg-background-600 rounded-lg p-6 border border-background-400"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          whileHover={{ scale: 1.01 }}
-        >
-          <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-            💭 情绪分析
-          </h3>
-          <p className="text-gray-400 text-sm whitespace-pre-wrap">
-            {report.reports.sentiment || '暂无数据'}
-          </p>
-        </motion.div>
-
-        {/* News */}
-        <motion.div
-          className="bg-background-600 rounded-lg p-6 border border-background-400"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          whileHover={{ scale: 1.01 }}
-        >
-          <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-            📰 新闻分析
-          </h3>
-          <p className="text-gray-400 text-sm whitespace-pre-wrap">
-            {report.reports.news || '暂无数据'}
-          </p>
-        </motion.div>
-
-        {/* Technical */}
-        <motion.div
-          className="bg-background-600 rounded-lg p-6 border border-background-400"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
-          whileHover={{ scale: 1.01 }}
-        >
-          <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-            📉 技术分析
-          </h3>
-          <p className="text-gray-400 text-sm whitespace-pre-wrap">
-            {report.reports.technical || '暂无数据'}
-          </p>
-        </motion.div>
-      </div>
-
-      {/* Synthesis */}
-      <motion.div
-        className="bg-background-600 rounded-lg p-6 border border-background-400"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.0 }}
+      {/* Toggle Detailed Reports */}
+      <button
+        onClick={() => setShowDetails(!showDetails)}
+        className="w-full px-4 py-3 bg-background-600 hover:bg-background-500 rounded-lg border border-background-400 text-gray-300 text-sm flex items-center justify-center gap-2 transition-colors"
       >
-        <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-          🔬 综合研判
-        </h3>
-        <p className="text-gray-300 whitespace-pre-wrap">
-          {report.reports.synthesis || '暂无数据'}
-        </p>
-      </motion.div>
+        <span>{showDetails ? '收起' : '展开'}详细分析</span>
+        <motion.svg
+          className="w-4 h-4"
+          animate={{ rotate: showDetails ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </motion.svg>
+      </button>
 
-      {/* Risk Factors */}
+      {/* Detailed Reports - Collapsible */}
+      <AnimatePresence>
+        {showDetails && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-4"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CollapsibleCard
+                title="基本面分析"
+                icon="📈"
+                content={report.reports.fundamentals}
+                delay={0}
+              />
+              <CollapsibleCard
+                title="情绪分析"
+                icon="💭"
+                content={report.reports.sentiment}
+                delay={0.1}
+              />
+              <CollapsibleCard
+                title="新闻分析"
+                icon="📰"
+                content={report.reports.news}
+                delay={0.2}
+              />
+              <CollapsibleCard
+                title="技术分析"
+                icon="📉"
+                content={report.reports.technical}
+                delay={0.3}
+              />
+            </div>
+
+            {/* Synthesis */}
+            <CollapsibleCard
+              title="综合研判"
+              icon="🔬"
+              content={report.reports.synthesis}
+              defaultOpen={true}
+              delay={0.4}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Risk Factors - Always visible */}
       <motion.div
         className="bg-background-600 rounded-lg p-6 border border-background-400"
         initial={{ opacity: 0, y: 20 }}
