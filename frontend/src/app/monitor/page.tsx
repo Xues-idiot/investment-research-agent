@@ -54,7 +54,36 @@ export default function MonitorPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(30); // 秒
+  const [marketOpen, setMarketOpen] = useState(false);
+  const [marketStatusTime, setMarketStatusTime] = useState<Date>(new Date());
   const autoRefreshRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 检查市场是否开盘
+  const checkMarketStatus = useCallback(() => {
+    const now = new Date();
+    const day = now.getDay();
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+    const cstHour = (hour - 8 + 24) % 24; // 转换为CST时区 (UTC+8)
+
+    // 周一到周五
+    const isWeekday = day >= 1 && day <= 5;
+    // 9:30 - 11:30 上午盘
+    const isMorningSession = (cstHour === 9 && minute >= 30) || (cstHour >= 10 && cstHour < 12);
+    // 13:00 - 15:00 下午盘
+    const isAfternoonSession = cstHour >= 13 && cstHour < 15;
+
+    const isOpen = isWeekday && (isMorningSession || isAfternoonSession);
+    setMarketOpen(isOpen);
+    setMarketStatusTime(now);
+  }, []);
+
+  useEffect(() => {
+    checkMarketStatus();
+    // 每分钟检查一次
+    const interval = setInterval(checkMarketStatus, 60000);
+    return () => clearInterval(interval);
+  }, [checkMarketStatus]);
 
   const fetchStatus = async () => {
     try {
@@ -295,8 +324,23 @@ export default function MonitorPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold text-white mb-2">🔔 监控告警</h1>
-          <p className="text-gray-400">设置价格、成交量、RSI告警，实时监控股票</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">🔔 监控告警</h1>
+              <p className="text-gray-400">设置价格、成交量、RSI告警，实时监控股票</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
+                marketOpen ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
+              }`}>
+                <span className={`w-2 h-2 rounded-full ${marketOpen ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`} />
+                <span className="font-medium">{marketOpen ? '开盘中' : '已休市'}</span>
+              </div>
+              <span className="text-xs text-gray-500">
+                更新: {marketStatusTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+          </div>
         </motion.div>
 
         {/* Status Card */}
