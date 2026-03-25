@@ -43,13 +43,30 @@ export function ChartSkeleton({ height = 300 }: { height?: number }) {
   return (
     <div className="bg-background-600 rounded-xl border border-background-400 p-6">
       <div className="flex items-center justify-between mb-4">
-        <Skeleton className="h-6 w-32" />
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-6 w-6 rounded" />
+          <Skeleton className="h-6 w-40" />
+        </div>
+        <div className="flex gap-3">
+          <Skeleton className="h-8 w-20 rounded" />
           <Skeleton className="h-8 w-16 rounded" />
           <Skeleton className="h-8 w-16 rounded" />
         </div>
       </div>
-      <Skeleton className="w-full rounded" style={{ height: `${height}px` }} />
+      {/* K-line placeholder */}
+      <div className="rounded bg-background-500/50 flex items-end justify-around gap-1 p-4" style={{ height: `${height}px` }}>
+        {Array.from({ length: 30 }).map((_, i) => (
+          <Skeleton
+            key={i}
+            className="w-3 rounded-t"
+            style={{ height: `${20 + Math.random() * 60}%` }}
+          />
+        ))}
+      </div>
+      <div className="mt-3 flex items-center justify-between">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-4 w-48" />
+      </div>
     </div>
   );
 }
