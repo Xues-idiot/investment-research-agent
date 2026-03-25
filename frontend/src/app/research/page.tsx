@@ -15,6 +15,7 @@ import StreamingProgress from '@/components/StreamingProgress';
 import { KLineChart, TechnicalChart } from '@/components/charts';
 import { useFavorites } from '@/hooks/useFavorites';
 import BatchResearch from '@/components/BatchResearch';
+import Toast, { toast, useToast } from '@/components/Toast';
 
 const HISTORY_KEY = 'rho_research_history';
 const MAX_HISTORY = 10;
@@ -80,6 +81,7 @@ export default function ResearchPage() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [researchStartTime, setResearchStartTime] = useState<number>(0);
   const { favorites, removeFavorite } = useFavorites();
+  const { toasts, removeToast } = useToast();
 
   // 加载历史记录
   useEffect(() => {
@@ -179,6 +181,12 @@ export default function ResearchPage() {
     saveToHistory(data);
     // 获取图表数据
     fetchChartData(data.stockCode);
+    // 显示完成通知
+    toast({
+      type: 'success',
+      title: '研究完成',
+      message: `${data.companyName} (${data.stockCode}) 研究报告已生成`,
+    });
   }, []);
 
   // 获取图表数据
@@ -550,6 +558,9 @@ export default function ResearchPage() {
           )}
         </AnimatePresence>
       </main>
+
+      {/* Toast Notifications */}
+      <Toast toasts={toasts} onRemove={removeToast} />
     </div>
   );
 }
