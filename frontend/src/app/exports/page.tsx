@@ -12,6 +12,55 @@ export default function ExportsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState('blank');
+
+  const sampleReport = `# 贵州茅台（600519）投资研究报告
+
+## 基本面分析
+
+**公司概况**
+贵州茅台是中国白酒行业的龙头企业，主要从事茅台酒及系列酒的生产和销售。
+
+**财务数据**
+- 营业收入：2023年约1476亿元
+- 净利润：2023年约747亿元
+- 毛利率：约92%
+- ROE：约30%
+
+**估值分析**
+- PE ratio: 约28倍
+- PB ratio: 约10倍
+- 股息率: 约2.5%
+
+## 技术面分析
+
+**趋势分析**
+- MA5: ¥1750.00
+- MA20: ¥1720.00
+- MA60: ¥1680.00
+- 当前趋势：多头排列
+
+**技术指标**
+- RSI(14): 58.5
+- MACD: 金叉状态
+- KDJ: 中性偏多
+
+## 投资建议
+
+**综合评级**: ⭐⭐⭐⭐ ☆ (4/5)
+
+**风险等级**: R2 (中低风险)
+
+**结论**: 贵州茅台作为白酒龙头，具有较强的品牌护城河和稳定的现金流。估值处于合理区间，适合长期持有。
+
+---
+*报告由 Rho 投研 Agent 自动生成，仅供参考，不构成投资建议。*`;
+
+  const templates = {
+    blank: { name: '空白模板', content: '' },
+    standard: { name: '标准投研报告', content: sampleReport },
+    brief: { name: '简报模板', content: `# {{stockCode}} 投资简报\n\n## 核心观点\n\n- 置信度: {{confidence}}\n- 风险等级: {{riskLevel}}\n\n## 投资建议\n\n{{summary}}` },
+  };
 
   const handleExport = async () => {
     if (!markdownContent) {
@@ -58,48 +107,6 @@ export default function ExportsPage() {
     }
   };
 
-  const sampleReport = `# 贵州茅台（600519）投资研究报告
-
-## 基本面分析
-
-**公司概况**
-贵州茅台是中国白酒行业的龙头企业，主要从事茅台酒及系列酒的生产和销售。
-
-**财务数据**
-- 营业收入：2023年约1476亿元
-- 净利润：2023年约747亿元
-- 毛利率：约92%
-- ROE：约30%
-
-**估值分析**
-- PE ratio: 约28倍
-- PB ratio: 约10倍
-- 股息率: 约2.5%
-
-## 技术面分析
-
-**趋势分析**
-- MA5: ¥1750.00
-- MA20: ¥1720.00
-- MA60: ¥1680.00
-- 当前趋势：多头排列
-
-**技术指标**
-- RSI(14): 58.5
-- MACD: 金叉状态
-- KDJ: 中性偏多
-
-## 投资建议
-
-**综合评级**: ⭐⭐⭐⭐ ☆ (4/5)
-
-**风险等级**: R2 (中低风险)
-
-**结论**: 贵州茅台作为白酒龙头，具有较强的品牌护城河和稳定的现金流。估值处于合理区间，适合长期持有。
-
----
-*报告由 Rho 投研 Agent 自动生成，仅供参考，不构成投资建议。*`;
-
   return (
     <div className="min-h-screen bg-background-500 py-8">
       <div className="max-w-7xl mx-auto px-4">
@@ -120,7 +127,7 @@ export default function ExportsPage() {
           className="bg-background-600 rounded-xl border border-background-400 p-6 mb-8"
         >
           <h2 className="text-xl font-semibold text-white mb-4">导出报告</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
               <label className="block text-gray-300 text-sm font-medium mb-2">股票代码</label>
               <input
@@ -150,6 +157,23 @@ export default function ExportsPage() {
               >
                 <option value="html">HTML</option>
                 <option value="pdf">PDF</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">模板</label>
+              <select
+                value={selectedTemplate}
+                onChange={(e) => {
+                  setSelectedTemplate(e.target.value);
+                  if (e.target.value !== 'blank') {
+                    setMarkdownContent(templates[e.target.value as keyof typeof templates].content);
+                  }
+                }}
+                className="w-full px-4 py-3 bg-background-500 border border-background-400 rounded-lg text-white focus:outline-none focus:border-primary-500"
+              >
+                <option value="blank">空白模板</option>
+                <option value="standard">标准投研报告</option>
+                <option value="brief">简报模板</option>
               </select>
             </div>
           </div>
