@@ -186,6 +186,13 @@ ${report.finalReport}
     URL.revokeObjectURL(url);
   }, [report]);
 
+  // 复制股票代码用于对比
+  const handleCompare = useCallback(() => {
+    navigator.clipboard.writeText(report.stockCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [report.stockCode]);
+
   return (
     <div className="space-y-6">
       {/* Main Report Card */}
@@ -259,6 +266,13 @@ ${report.finalReport}
               className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded text-sm text-white transition-colors flex items-center gap-1"
             >
               📥 MD
+            </button>
+            <div className="h-4 w-px bg-white/30 mx-1" />
+            <button
+              onClick={handleCompare}
+              className="px-3 py-1.5 bg-secondary-500/80 hover:bg-secondary-500 rounded text-sm text-white transition-colors flex items-center gap-1"
+            >
+              📈 对比
             </button>
           </div>
         </motion.div>
