@@ -14,6 +14,7 @@ import AgentStatus from '@/components/AgentStatus';
 import StreamingProgress from '@/components/StreamingProgress';
 import { KLineChart, TechnicalChart } from '@/components/charts';
 import { useFavorites } from '@/hooks/useFavorites';
+import BatchResearch from '@/components/BatchResearch';
 
 const HISTORY_KEY = 'rho_research_history';
 const MAX_HISTORY = 10;
@@ -73,6 +74,7 @@ export default function ResearchPage() {
   const [currentAgent, setCurrentAgent] = useState<string>('');
   const [currentMessage, setCurrentMessage] = useState<string>('');
   const [useStreaming, setUseStreaming] = useState(true);
+  const [showBatch, setShowBatch] = useState(false);
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [showCharts, setShowCharts] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -244,6 +246,17 @@ export default function ResearchPage() {
             >
               📦 批量
             </button>
+            <div className="h-4 w-px bg-background-400 mx-2" />
+            <button
+              onClick={() => setShowBatch(!showBatch)}
+              className={`px-3 py-1 rounded text-sm transition-colors ${
+                showBatch
+                  ? 'bg-secondary-500 text-white'
+                  : 'bg-background-600 text-gray-400 hover:text-white'
+              }`}
+            >
+              📚 批量研究
+            </button>
           </div>
         </motion.div>
 
@@ -264,6 +277,30 @@ export default function ResearchPage() {
             <StockSearchAutocomplete onSearch={handleResearch} loading={loading} />
           )}
         </motion.div>
+
+        {/* Batch Research Section */}
+        <AnimatePresence>
+          {showBatch && (
+            <motion.div
+              className="mb-8"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <BatchResearch
+                onResearch={(codes) => {
+                  // For batch, we just research the first one for now
+                  // The backend would need batch support
+                  if (codes.length > 0) {
+                    handleResearch(codes[0]);
+                  }
+                }}
+                loading={loading}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Streaming Progress */}
         <AnimatePresence>
