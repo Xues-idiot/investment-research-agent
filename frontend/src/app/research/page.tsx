@@ -8,6 +8,7 @@ import StockSearch from '@/components/StockSearch';
 import StockSearchAutocomplete from '@/components/StockSearchAutocomplete';
 import StreamingSearch from '@/components/StreamingSearch';
 import { ResearchSkeleton } from '@/components/SkeletonLoader';
+import { useKeyboardShortcuts, ShortcutHint } from '@/hooks/useKeyboardShortcuts';
 import ReportCard from '@/components/ReportCard';
 import AgentStatus from '@/components/AgentStatus';
 import StreamingProgress from '@/components/StreamingProgress';
@@ -115,6 +116,15 @@ export default function ResearchPage() {
       // 流式模式会在提交时自动开始
     }
   }, [useStreaming]);
+
+  // 快捷键
+  const shortcuts = [
+    { key: 'r', action: () => document.querySelector<HTMLInputElement>('input[placeholder*="股票"]')?.focus(), description: '聚焦搜索' },
+    { key: 'c', action: () => setUseStreaming(!useStreaming), description: '切换模式' },
+    { key: 'Escape', action: () => { setLoading(false); setCurrentAgent(''); }, description: '取消' },
+  ];
+
+  useKeyboardShortcuts(shortcuts);
 
   // 非流式处理
   const handleResearch = async (stockCode: string) => {
@@ -268,6 +278,18 @@ export default function ResearchPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Keyboard Shortcuts Hint */}
+        {!loading && (
+          <motion.div
+            className="text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <ShortcutHint shortcuts={shortcuts} />
+          </motion.div>
+        )}
 
         {/* Traditional Agent Status (for non-streaming mode) */}
         <AnimatePresence>
