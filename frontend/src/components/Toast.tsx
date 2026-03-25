@@ -90,11 +90,27 @@ export default function Toast({ toasts, onRemove }: ToastProps) {
 
 // Toast Hook
 const toastListeners: Array<(toast: ToastMessage) => void> = [];
+let soundEnabled = false;
 
 export function toast(options: Omit<ToastMessage, 'id'>) {
   const id = Math.random().toString(36).substr(2, 9);
   const newToast: ToastMessage = { ...options, id };
   toastListeners.forEach(listener => listener(newToast));
+
+  // 播放提示音
+  if (soundEnabled && options.type === 'success') {
+    try {
+      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleVcQNpHW+NueZVQ1Wq/w/5xkPzJJlub/o2hbOUaI1vTlpn5pGgA6jNj2y4pvIhAAAG0');
+      audio.volume = 0.3;
+      audio.play().catch(() => {});
+    } catch (e) {
+      // Ignore audio errors
+    }
+  }
+}
+
+export function setToastSound(enabled: boolean) {
+  soundEnabled = enabled;
 }
 
 export function useToast() {
