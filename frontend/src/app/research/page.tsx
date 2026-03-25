@@ -11,6 +11,9 @@ import AgentStatus from '@/components/AgentStatus';
 import StreamingProgress from '@/components/StreamingProgress';
 import { KLineChart, TechnicalChart } from '@/components/charts';
 
+const HISTORY_KEY = 'rho_research_history';
+const MAX_HISTORY = 10;
+
 interface ResearchResult {
   stockCode: string;
   companyName: string;
@@ -51,6 +54,14 @@ interface ChartData {
   }[];
 }
 
+interface HistoryItem {
+  stockCode: string;
+  companyName: string;
+  riskLevel: string;
+  riskScore: number;
+  timestamp: string;
+}
+
 export default function ResearchPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ResearchResult | null>(null);
@@ -60,6 +71,48 @@ export default function ResearchPage() {
   const [useStreaming, setUseStreaming] = useState(true);
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [showCharts, setShowCharts] = useState(false);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+
+  // 加载历史记录
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(HISTORY_KEY);
+      if (stored) {
+        setHistory(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error('Failed to load history:', e);
+    }
+  }, []);
+
+  // 保存到历史记录
+  const saveToHistory = useCallback((res: ResearchResult) => {
+    const item: HistoryItem = {
+      stockCode: res.stockCode,
+      companyName: res.companyName,
+      riskLevel: res.riskAssessment.level,
+      riskScore: res.riskAssessment.score,
+      timestamp: new Date().toISOString(),
+    };
+    setHistory(prev => {
+      // 去重：新记录在前
+      const filtered = prev.filter(h => h.stockCode !== item.stockCode);
+      const updated = [item, ...filtered].slice(0, MAX_HISTORY);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  // 从历史恢复
+  const loadFromHistory = useCallback((item: HistoryItem) => {
+    setResult(null);
+    setChartData(null);
+    setShowCharts(false);
+    // 重新研究该股票
+    if (useStreaming) {
+      // 流式模式会在提交时自动开始
+    }
+  }, [useStreaming]);
 
   // 非流式处理
   const handleResearch = async (stockCode: string) => {
@@ -81,6 +134,7 @@ export default function ResearchPage() {
 
       if (data.success) {
         setResult(data.data);
+        saveToHistory(data.data);
       } else {
         setError(data.error || '研究失败');
       }
@@ -104,6 +158,7 @@ export default function ResearchPage() {
     setLoading(false);
     setCurrentAgent('');
     setCurrentMessage('');
+    saveToHistory(data);
     // 获取图表数据
     fetchChartData(data.stockCode);
   }, []);
@@ -284,34 +339,86 @@ export default function ResearchPage() {
         <AnimatePresence>
           {!result && !loading && !error && (
             <motion.div
-              className="text-center py-16"
+              className="space-y-8"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <motion.div
-                className="text-6xl mb-4"
-                animate={{ y: [0, -10, 0] }}
-                transition={{ repeat: Infinity, duration: 2 }}
-              >
-                🔍
-              </motion.div>
-              <motion.h2
-                className="text-2xl font-semibold text-gray-300 mb-2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-              >
-                开始您的投资研究
-              </motion.h2>
-              <motion.p
-                className="text-gray-500"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                输入股票代码，我们将为您生成详细的投资研究报告
-              </motion.p>
+              {/* Empty state message */}
+              <div className="text-center py-8">
+                <motion.div
+                  className="text-6xl mb-4"
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                >
+                  🔍
+                </motion.div>
+                <motion.h2
+                  className="text-2xl font-semibold text-gray-300 mb-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  开始您的投资研究
+                </motion.h2>
+                <motion.p
+                  className="text-gray-500"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  输入股票代码，我们将为您生成详细的投资研究报告
+                </motion.p>
+              </div>
+
+              {/* Research History */}
+              {history.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="bg-background-600 rounded-xl border border-background-400 p-6"
+                >
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    📜 最近研究
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {history.map((item, index) => (
+                      <motion.button
+                        key={item.stockCode}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 * index }}
+                        onClick={() => {
+                          // 触发重新研究
+                          setResult(null);
+                          setShowCharts(false);
+                        }}
+                        className="p-3 bg-background-500 hover:bg-background-400 rounded-lg text-left transition-colors group"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-white font-medium">{item.companyName}</p>
+                            <p className="text-gray-400 text-sm">{item.stockCode}</p>
+                          </div>
+                          <div className="text-right">
+                            <span className={`text-xs px-2 py-1 rounded ${
+                              item.riskLevel === 'HIGH' ? 'bg-red-500/20 text-red-400' :
+                              item.riskLevel === 'MEDIUM' ? 'bg-yellow-500/20 text-yellow-400' :
+                              'bg-green-500/20 text-green-400'
+                            }`}>
+                              {item.riskLevel}
+                            </span>
+                            <p className="text-gray-500 text-xs mt-1">
+                              {new Date(item.timestamp).toLocaleDateString('zh-CN')}
+                            </p>
+                          </div>
+                        </div>
+                      </motion.button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
