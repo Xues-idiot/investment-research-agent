@@ -2,7 +2,7 @@
 
 // Research Page - 投资研究页面 (支持流式输出+K线图表)
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import StockSearch from '@/components/StockSearch';
 import StockSearchAutocomplete from '@/components/StockSearchAutocomplete';
@@ -68,7 +68,7 @@ interface HistoryItem {
   timestamp: string;
 }
 
-export default function ResearchPage() {
+function ResearchPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ResearchResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -614,5 +614,13 @@ export default function ResearchPage() {
       {/* Toast Notifications */}
       <Toast toasts={toasts} onRemove={removeToast} />
     </div>
+  );
+}
+
+export default function ResearchPageWithParams() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background-500 flex items-center justify-center"><div className="text-white">加载中...</div></div>}>
+      <ResearchPage />
+    </Suspense>
   );
 }
