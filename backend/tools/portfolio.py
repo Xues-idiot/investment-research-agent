@@ -4,6 +4,7 @@
 from datetime import datetime
 from typing import List, Dict, Optional
 from dataclasses import dataclass
+from enum import Enum
 
 from ..tools.financial_data import get_stock_info, get_peer_comparison
 from ..tools.stock_price import get_indicators, get_stock_price
@@ -331,7 +332,3 @@ def analyze_portfolio_risk(portfolio: dict) -> dict:
     """
     analyzer = RiskAnalyzer()
     return analyzer.analyze_portfolio_risk(portfolio)
-
-
-# 需要导入 Enum
-from enum import Enum

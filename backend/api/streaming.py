@@ -58,21 +58,25 @@ def generate_events(stock_code: str, company_name: str = None):
             result = graph.propagate(stock_code, datetime.now().strftime("%Y-%m-%d"))
 
             # 返回最终结果
-            yield f"data: {json.dumps({'event': 'complete', 'data': {
-                'stock_code': stock_code,
-                'company_name': company_name,
-                'research_date': datetime.now().strftime("%Y-%m-%d"),
-                'final_report': result.get('final_report', ''),
-                'confidence': result.get('confidence', 0.0),
-                'risk_assessment': result.get('risk_assessment', {}),
-                'reports': {
-                    'fundamentals': result.get('fundamentals_report', {}).get('content', ''),
-                    'sentiment': result.get('sentiment_report', {}).get('content', ''),
-                    'news': result.get('news_report', {}).get('content', ''),
-                    'technical': result.get('technical_report', {}).get('content', ''),
-                    'synthesis': result.get('synthesis_report', ''),
+            complete_data = {
+                'event': 'complete',
+                'data': {
+                    'stock_code': stock_code,
+                    'company_name': company_name,
+                    'research_date': datetime.now().strftime("%Y-%m-%d"),
+                    'final_report': result.get('final_report', ''),
+                    'confidence': result.get('confidence', 0.0),
+                    'risk_assessment': result.get('risk_assessment', {}),
+                    'reports': {
+                        'fundamentals': result.get('fundamentals_report', {}).get('content', ''),
+                        'sentiment': result.get('sentiment_report', {}).get('content', ''),
+                        'news': result.get('news_report', {}).get('content', ''),
+                        'technical': result.get('technical_report', {}).get('content', ''),
+                        'synthesis': result.get('synthesis_report', ''),
+                    }
                 }
-            })}\n\n"
+            }
+            yield f"data: {json.dumps(complete_data)}\n\n"
 
         except Exception as e:
             yield f"data: {json.dumps({'event': 'error', 'data': str(e)})}\n\n"
