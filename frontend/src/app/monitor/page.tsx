@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 
 const STORAGE_KEY = 'rho_monitor_alerts';
@@ -52,6 +52,9 @@ export default function MonitorPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const [refreshInterval, setRefreshInterval] = useState(30); // 秒
+  const autoRefreshRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchStatus = async () => {
     try {
@@ -97,6 +100,33 @@ export default function MonitorPage() {
     fetchStatus();
     fetchAlerts();
   }, []);
+
+  // 自动刷新逻辑
+  const startAutoRefresh = useCallback(() => {
+    if (autoRefreshRef.current) {
+      clearInterval(autoRefreshRef.current);
+    }
+    autoRefreshRef.current = setInterval(() => {
+      fetchStatus();
+      fetchAlerts();
+    }, refreshInterval * 1000);
+  }, [refreshInterval]);
+
+  const stopAutoRefresh = useCallback(() => {
+    if (autoRefreshRef.current) {
+      clearInterval(autoRefreshRef.current);
+      autoRefreshRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (autoRefresh) {
+      startAutoRefresh();
+    } else {
+      stopAutoRefresh();
+    }
+    return () => stopAutoRefresh();
+  }, [autoRefresh, refreshInterval, startAutoRefresh, stopAutoRefresh]);
 
   const handleAddAlert = async () => {
     if (!stockCode || !threshold) {
@@ -275,11 +305,11 @@ export default function MonitorPage() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-background-600 rounded-xl border border-background-400 p-6 mb-8"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h2 className="text-xl font-semibold text-white mb-2">监控状态</h2>
               {status && (
-                <div className="flex gap-6 text-sm">
+                <div className="flex gap-6 text-sm flex-wrap">
                   <span className="text-gray-400">
                     状态: <span className={status.running ? 'text-green-400' : 'text-gray-500'}>{status.running ? '运行中' : '已停止'}</span>
                   </span>
@@ -289,7 +319,33 @@ export default function MonitorPage() {
                 </div>
               )}
             </div>
-            <div className="flex gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
+              {/* Auto Refresh Toggle */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setAutoRefresh(!autoRefresh)}
+                  className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                    autoRefresh
+                      ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                      : 'bg-background-500 text-gray-400 border border-background-400'
+                  }`}
+                >
+                  🔄 自动刷新 {autoRefresh ? 'ON' : 'OFF'}
+                </button>
+                {autoRefresh && (
+                  <select
+                    value={refreshInterval}
+                    onChange={(e) => setRefreshInterval(Number(e.target.value))}
+                    className="px-2 py-1 bg-background-500 border border-background-400 rounded text-white text-sm"
+                  >
+                    <option value={10}>10秒</option>
+                    <option value={30}>30秒</option>
+                    <option value={60}>1分钟</option>
+                    <option value={300}>5分钟</option>
+                  </select>
+                )}
+              </div>
+
               {!status?.running ? (
                 <button
                   onClick={handleStartMonitor}
