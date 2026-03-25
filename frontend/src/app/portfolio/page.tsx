@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { AllocationChart } from '@/components/charts';
 
 interface Holding {
   stock_code: string;
@@ -236,6 +237,16 @@ export default function PortfolioPage() {
                   策略: <span className="text-white">{strategyLabels[suggestion.strategy]}</span>
                 </span>
               </div>
+            </div>
+
+            {/* Allocation Chart */}
+            <div className="bg-background-600 rounded-xl border border-background-400 p-6">
+              <h2 className="text-xl font-semibold text-white mb-4">配置分布</h2>
+              <AllocationChart
+                holdings={suggestion.holdings}
+                cashReservePct={suggestion.cash_reserve_pct}
+                height={280}
+              />
             </div>
 
             {/* Holdings */}
