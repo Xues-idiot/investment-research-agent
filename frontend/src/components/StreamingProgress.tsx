@@ -3,10 +3,12 @@
 // StreamingProgress - 流式研究进度显示组件
 
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
 interface StreamingProgressProps {
   currentAgent: string;
   currentMessage: string;
+  startTime?: number;
 }
 
 const agentSteps = [
@@ -20,8 +22,51 @@ const agentSteps = [
   { id: 'report', name: '简报', icon: '📊' },
 ];
 
-export default function StreamingProgress({ currentAgent, currentMessage }: StreamingProgressProps) {
+interface StepTiming {
+  startTime: number;
+  endTime?: number;
+}
+
+export default function StreamingProgress({ currentAgent, currentMessage, startTime: propsStartTime }: StreamingProgressProps) {
+  const [stepTimings, setStepTimings] = useState<Record<string, StepTiming>>({});
+  const [totalElapsed, setTotalElapsed] = useState(0);
+
   const currentIndex = agentSteps.findIndex(a => a.id === currentAgent);
+
+  // Track step timing
+  useEffect(() => {
+    if (currentAgent && !stepTimings[currentAgent]) {
+      setStepTimings(prev => ({
+        ...prev,
+        [currentAgent]: { startTime: Date.now() },
+      }));
+    } else if (currentAgent && stepTimings[currentAgent] && !stepTimings[currentAgent].endTime) {
+      // Step completed
+      setStepTimings(prev => ({
+        ...prev,
+        [currentAgent]: { ...prev[currentAgent], endTime: Date.now() },
+      }));
+    }
+  }, [currentAgent]);
+
+  // Update total elapsed time
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const start = propsStartTime || stepTimings['init']?.startTime || Date.now();
+      setTotalElapsed(Date.now() - start);
+    }, 100);
+    return () => clearInterval(interval);
+  }, [propsStartTime, stepTimings]);
+
+  // Calculate current step duration
+  const getStepDuration = (stepId: string): string => {
+    const timing = stepTimings[stepId];
+    if (!timing) return '';
+    const end = timing.endTime || Date.now();
+    const duration = end - timing.startTime;
+    if (duration < 1000) return `${duration}ms`;
+    return `${(duration / 1000).toFixed(1)}s`;
+  };
 
   return (
     <motion.div
@@ -31,15 +76,20 @@ export default function StreamingProgress({ currentAgent, currentMessage }: Stre
       exit={{ opacity: 0, height: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-        <motion.span
-          animate={{ rotate: [0, 360] }}
-          transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
-        >
-          🔄
-        </motion.span>
-        研究进度
-      </h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+          <motion.span
+            animate={{ rotate: [0, 360] }}
+            transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
+          >
+            🔄
+          </motion.span>
+          研究进度
+        </h3>
+        <div className="text-sm text-gray-400">
+          已用时: <span className="text-white font-mono">{(totalElapsed / 1000).toFixed(1)}s</span>
+        </div>
+      </div>
 
       {/* Current Message */}
       <motion.div
@@ -57,6 +107,7 @@ export default function StreamingProgress({ currentAgent, currentMessage }: Stre
           const isComplete = index < currentIndex;
           const isActive = index === currentIndex;
           const isPending = index > currentIndex;
+          const duration = getStepDuration(step.id);
 
           return (
             <motion.div
@@ -65,7 +116,7 @@ export default function StreamingProgress({ currentAgent, currentMessage }: Stre
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05, duration: 0.3 }}
               className={`
-                flex flex-col items-center p-3 rounded-lg transition-all
+                flex flex-col items-center p-3 rounded-lg transition-all relative
                 ${isComplete && 'bg-green-500/20 text-green-400'}
                 ${isActive && 'bg-primary-500/30 text-primary-300 ring-2 ring-primary-500/50'}
                 ${isPending && 'bg-background-500/50 text-gray-500'}
@@ -79,6 +130,9 @@ export default function StreamingProgress({ currentAgent, currentMessage }: Stre
                 {step.icon}
               </motion.span>
               <span className="text-xs text-center">{step.name}</span>
+              {duration && (
+                <span className="text-xs text-gray-400 mt-0.5 font-mono">{duration}</span>
+              )}
               {isActive && (
                 <motion.div
                   className="w-2 h-2 rounded-full bg-primary-400 mt-1"

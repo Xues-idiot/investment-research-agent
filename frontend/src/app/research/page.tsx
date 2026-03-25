@@ -76,6 +76,7 @@ export default function ResearchPage() {
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [showCharts, setShowCharts] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [researchStartTime, setResearchStartTime] = useState<number>(0);
   const { favorites, removeFavorite } = useFavorites();
 
   // 加载历史记录
@@ -134,6 +135,7 @@ export default function ResearchPage() {
     setError(null);
     setCurrentAgent('调度');
     setResult(null);
+    setResearchStartTime(Date.now());
 
     try {
       const response = await fetch('http://localhost:8001/api/research', {
@@ -276,6 +278,7 @@ export default function ResearchPage() {
               <StreamingProgress
                 currentAgent={currentAgent}
                 currentMessage={currentMessage}
+                startTime={researchStartTime}
               />
             </motion.div>
           )}
