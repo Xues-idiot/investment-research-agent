@@ -10,6 +10,9 @@ interface StockSearchAutocompleteProps {
   loading: boolean;
 }
 
+const RECENT_KEY = 'rho_recent_searches';
+const MAX_RECENT = 5;
+
 // 常用股票列表（用于演示自动补全）
 const POPULAR_STOCKS = [
   { code: '600519', name: '贵州茅台' },
@@ -29,8 +32,58 @@ export default function StockSearchAutocomplete({ onSearch, loading }: StockSear
   const [suggestions, setSuggestions] = useState<typeof POPULAR_STOCKS>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [recentSearches, setRecentSearches] = useState<typeof POPULAR_STOCKS>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // 加载最近搜索
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(RECENT_KEY);
+      if (stored) {
+        setRecentSearches(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error('Failed to load recent searches:', e);
+    }
+  }, []);
+
+  // 选择建议项
+  const handleSelect = useCallback((code: string, name?: string) => {
+    setInput(code);
+    setShowSuggestions(false);
+    setSuggestions([]);
+    // 保存到最近搜索
+    if (name) {
+      const item = { code, name };
+      setRecentSearches(prev => {
+        const filtered = prev.filter(s => s.code !== code);
+        const updated = [item, ...filtered].slice(0, MAX_RECENT);
+        localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
+        return updated;
+      });
+    }
+    onSearch(code);
+  }, [onSearch]);
+
+  // 提交搜索
+  const handleSubmit = useCallback(() => {
+    if (input.trim() && !loading) {
+      // 保存到最近搜索（尝试从热门股票匹配名称）
+      const matched = POPULAR_STOCKS.find(s => s.code === input.trim());
+      if (matched) {
+        const item = { code: matched.code, name: matched.name };
+        setRecentSearches(prev => {
+          const filtered = prev.filter(s => s.code !== matched.code);
+          const updated = [item, ...filtered].slice(0, MAX_RECENT);
+          localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
+          return updated;
+        });
+      }
+      onSearch(input.trim());
+      setShowSuggestions(false);
+    }
+  }, [input, loading, onSearch]);
 
   // 处理输入变化
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,46 +99,32 @@ export default function StockSearchAutocomplete({ onSearch, loading }: StockSear
       setShowSuggestions(true);
       setSelectedIndex(-1);
     } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
+      setSuggestions(recentSearches);
+      setShowSuggestions(recentSearches.length > 0);
     }
-  }, []);
+  }, [recentSearches]);
 
   // 处理键盘导航
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    const currentSuggestions = input.length > 0 ? suggestions : recentSearches;
+    const maxIndex = currentSuggestions.length - 1;
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSelectedIndex(prev => Math.min(prev + 1, suggestions.length - 1));
+      setSelectedIndex(prev => Math.min(prev + 1, maxIndex));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setSelectedIndex(prev => Math.max(prev - 1, -1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      if (selectedIndex >= 0 && suggestions[selectedIndex]) {
-        handleSelect(suggestions[selectedIndex].code);
+      if (selectedIndex >= 0 && currentSuggestions[selectedIndex]) {
+        handleSelect(currentSuggestions[selectedIndex].code, currentSuggestions[selectedIndex].name);
       } else if (input.trim()) {
         handleSubmit();
       }
     } else if (e.key === 'Escape') {
       setShowSuggestions(false);
     }
-  }, [suggestions, selectedIndex, input]);
-
-  // 选择建议项
-  const handleSelect = useCallback((code: string) => {
-    setInput(code);
-    setShowSuggestions(false);
-    setSuggestions([]);
-    onSearch(code);
-  }, [onSearch]);
-
-  // 提交搜索
-  const handleSubmit = useCallback(() => {
-    if (input.trim() && !loading) {
-      onSearch(input.trim());
-      setShowSuggestions(false);
-    }
-  }, [input, loading, onSearch]);
+  }, [suggestions, selectedIndex, input, recentSearches, handleSelect, handleSubmit]);
 
   // 点击外部关闭建议列表
   useEffect(() => {
@@ -119,7 +158,14 @@ export default function StockSearchAutocomplete({ onSearch, loading }: StockSear
             type="text"
             value={input}
             onChange={handleChange}
-            onFocus={() => input.length > 0 && setShowSuggestions(true)}
+            onFocus={() => {
+              if (input.length > 0) {
+                setShowSuggestions(true);
+              } else if (recentSearches.length > 0) {
+                setSuggestions(recentSearches);
+                setShowSuggestions(true);
+              }
+            }}
             onKeyDown={handleKeyDown}
             placeholder="输入股票代码或名称，如：600519"
             disabled={loading}
@@ -186,10 +232,15 @@ export default function StockSearchAutocomplete({ onSearch, loading }: StockSear
             transition={{ duration: 0.15 }}
             className="absolute z-50 w-full mt-2 bg-background-600 border border-background-400 rounded-lg shadow-xl overflow-hidden"
           >
+            {input.length === 0 && (
+              <div className="px-4 py-2 text-xs text-gray-500 border-b border-background-400">
+                最近搜索
+              </div>
+            )}
             {suggestions.map((stock, index) => (
               <button
                 key={stock.code}
-                onClick={() => handleSelect(stock.code)}
+                onClick={() => handleSelect(stock.code, stock.name)}
                 className={`w-full px-4 py-3 text-left hover:bg-background-500 transition-colors flex items-center justify-between ${
                   index === selectedIndex ? 'bg-background-500' : ''
                 }`}
@@ -214,7 +265,7 @@ export default function StockSearchAutocomplete({ onSearch, loading }: StockSear
           {POPULAR_STOCKS.slice(0, 4).map((stock, i) => (
             <button
               key={stock.code}
-              onClick={() => handleSelect(stock.code)}
+              onClick={() => handleSelect(stock.code, stock.name)}
               className="hover:text-primary-400 mx-1 transition-colors"
             >
               {stock.code}
