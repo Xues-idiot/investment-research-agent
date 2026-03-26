@@ -30,28 +30,16 @@ def generate_events(stock_code: str, company_name: str = None):
 
         # 如果没有提供公司名称，尝试获取
         if not company_name or company_name == stock_code:
-            company_name = StockValidator.get_stock_name(stock_code) or stock_code
+            try:
+                company_name = StockValidator.get_stock_name(stock_code) or stock_code
+            except Exception as e:
+                company_name = stock_code  # 获取失败时使用代码作为名称
 
         # 初始化研究图
         graph = ResearchGraph(debug=False)
 
-        # 模拟各 Agent 的执行进度
-        agents = [
-            ('init', '初始化研究任务...'),
-            ('fundamental', '基本面分析 Agent 分析中...'),
-            ('sentiment', '情绪分析 Agent 分析中...'),
-            ('news', '新闻分析 Agent 分析中...'),
-            ('technical', '技术分析 Agent 分析中...'),
-            ('synthesize', '综合报告生成中...'),
-            ('risk', '风险评估中...'),
-            ('report', '投资简报生成中...'),
-        ]
-
-        for agent_id, message in agents:
-            yield f"data: {json.dumps({'event': 'agent', 'agent': agent_id, 'message': message})}\n\n"
-            # 模拟处理时间
-            import time
-            time.sleep(0.5)
+        # 发送初始化消息
+        yield f"data: {json.dumps({'event': 'agent', 'agent': 'init', 'message': '初始化研究任务...'})}\n\n"
 
         # 执行实际研究
         try:
@@ -116,16 +104,3 @@ def research_stock_stream():
     except Exception as e:
         handler = ErrorHandler()
         return jsonify(handler.handle_error(e)), 500
-
-
-@app.route("/api/stocks/validate/<stock_code>", methods=["GET"])
-def validate_stock(stock_code: str):
-    """验证股票代码"""
-    valid, market = StockValidator.validate(stock_code)
-    name = StockValidator.get_stock_name(stock_code) if valid else None
-
-    return jsonify({
-        "valid": valid,
-        "market": market,
-        "name": name
-    })

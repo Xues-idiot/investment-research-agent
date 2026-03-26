@@ -3,7 +3,7 @@
 // StreamingProgress - 流式研究进度显示组件
 
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface StreamingProgressProps {
   currentAgent: string;
@@ -30,18 +30,32 @@ interface StepTiming {
 export default function StreamingProgress({ currentAgent, currentMessage, startTime: propsStartTime }: StreamingProgressProps) {
   const [stepTimings, setStepTimings] = useState<Record<string, StepTiming>>({});
   const [totalElapsed, setTotalElapsed] = useState(0);
+  const stepTimingsRef = useRef(stepTimings);
+  const lastAgentRef = useRef<string | null>(null);
 
   const currentIndex = agentSteps.findIndex(a => a.id === currentAgent);
 
-  // Track step timing
+  // Keep ref in sync with state
   useEffect(() => {
-    if (currentAgent && !stepTimings[currentAgent]) {
+    stepTimingsRef.current = stepTimings;
+  }, [stepTimings]);
+
+  // Track step timing - 使用ref跟踪上次agent避免循环依赖
+  useEffect(() => {
+    // 跳过初始化（相同时不会重复设置）
+    if (currentAgent === lastAgentRef.current) return;
+    lastAgentRef.current = currentAgent;
+
+    if (!currentAgent) return;
+
+    // 如果这个step还没有记录，创建它
+    if (!stepTimingsRef.current[currentAgent]) {
       setStepTimings(prev => ({
         ...prev,
         [currentAgent]: { startTime: Date.now() },
       }));
-    } else if (currentAgent && stepTimings[currentAgent] && !stepTimings[currentAgent].endTime) {
-      // Step completed
+    } else if (!stepTimingsRef.current[currentAgent].endTime) {
+      // Step已完成（agent切换了），记录结束时间
       setStepTimings(prev => ({
         ...prev,
         [currentAgent]: { ...prev[currentAgent], endTime: Date.now() },
@@ -52,11 +66,11 @@ export default function StreamingProgress({ currentAgent, currentMessage, startT
   // Update total elapsed time
   useEffect(() => {
     const interval = setInterval(() => {
-      const start = propsStartTime || stepTimings['init']?.startTime || Date.now();
+      const start = propsStartTime || stepTimingsRef.current['init']?.startTime || Date.now();
       setTotalElapsed(Date.now() - start);
     }, 100);
     return () => clearInterval(interval);
-  }, [propsStartTime, stepTimings]);
+  }, [propsStartTime]);
 
   // Calculate current step duration
   const getStepDuration = (stepId: string): string => {

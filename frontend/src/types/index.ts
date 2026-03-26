@@ -1,5 +1,8 @@
 // Types for Rho Frontend
 
+// 统一版本号
+export const VERSION = '1.4.0';
+
 export interface StockInfo {
   stock_code: string;
   name: string;
@@ -27,10 +30,10 @@ export interface RiskAssessment {
 export interface ResearchReport {
   stockCode: string;
   companyName: string;
-  research_date: string;
-  final_report: string;
+  researchDate: string;
+  finalReport: string;
   confidence: number;
-  risk_assessment: RiskAssessment;
+  riskAssessment: RiskAssessment;
   reports: {
     fundamentals: string;
     sentiment: string;
@@ -76,18 +79,18 @@ export interface HealthStatus {
   version: string;
   timestamp: string;
   config: {
-    llm_provider: string;
-    api_port: number;
-    frontend_port: number;
+    llmProvider: string;
+    apiPort: number;
+    frontendPort: number;
   };
   environment: {
-    llm_configured: boolean;
-    tavily_configured: boolean;
+    llmConfigured: boolean;
+    tavilyConfigured: boolean;
   };
   system: {
-    cpu_percent: number;
-    memory_percent: number;
-    disk_percent: number;
+    cpuPercent: number;
+    memoryPercent: number;
+    diskPercent: number;
   };
 }
 
@@ -102,4 +105,178 @@ export interface StreamEvent {
   agent?: string;
   message?: string;
   data?: ResearchReport | string;
+}
+
+// ============ Chart Types ============
+
+export interface KLineData {
+  time: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume?: number;
+}
+
+export interface TechnicalData {
+  time: string;
+  macd: number;
+  macdSignal: number;
+  macdHistogram: number;
+  rsi: number;
+  kdjK: number;
+  kdjD: number;
+  kdjJ: number;
+}
+
+export interface ChartData {
+  stockCode: string;
+  companyName: string;
+  currentPrice: number;
+  priceChange: number;
+  priceChangePct: number;
+  kline: KLineData[];
+  technical: TechnicalData[];
+}
+
+// ============ Backtest Types ============
+
+export interface BacktestTrade {
+  date: string;
+  signal: string;
+  price: number;
+  shares: number;
+  amount: number;
+  commission: number;
+  reason: string;
+}
+
+export interface DailyReturn {
+  date: string;
+  value: number;
+  dailyReturn: number;
+}
+
+export interface BacktestResult {
+  stockCode: string;
+  startDate: string;
+  endDate: string;
+  initialCapital: number;
+  finalValue: number;
+  totalReturn: number;
+  totalReturnPct: number;
+  numTrades: number;
+  numBuys: number;
+  numSells: number;
+  winRate: number;
+  maxDrawdown: number;
+  maxDrawdownPct: number;
+  sharpeRatio: number;
+  trades: BacktestTrade[];
+  dailyReturns: DailyReturn[];
+}
+
+// ============ Portfolio Types ============
+
+export interface PortfolioHolding {
+  stockCode: string;
+  stockName: string;
+  weight: number;
+  shares: number;
+  entryPrice: number;
+  allocation: number;
+  allocationPct: number;
+}
+
+export interface PortfolioSuggestion {
+  totalCapital: number;
+  totalInvested: number;
+  cashReserve: number;
+  cashReservePct: number;
+  holdings: PortfolioHolding[];
+  numPositions: number;
+  strategy: string;
+  riskLevel: string;
+  timestamp: string;
+}
+
+export interface RiskAnalysis {
+  riskScore: number;
+  riskLevel: string;
+  concentrationRisk: string;
+  diversificationScore: number;
+  correlationRisk: string;
+  maxWeight: number;
+  numPositions: number;
+  suggestions: string[];
+}
+
+// ============ Monitor Types ============
+
+export interface Alert {
+  stockCode: string;
+  alertType: string;
+  threshold: number;
+  enabled: boolean;
+  triggeredAt?: string;
+  message?: string;
+}
+
+export interface AlertEvent {
+  stockCode: string;
+  stockName: string;
+  alertType: string;
+  currentValue: number;
+  threshold: number;
+  timestamp: string;
+  message: string;
+}
+
+// ============ Compare Types ============
+
+export interface ComparisonStock {
+  stockCode: string;
+  name: string;
+  price: number;
+  change: number;
+  changePercent: number;
+  peRatio?: number;
+  pbRatio?: number;
+  marketCap: number;
+  dividendYield: number;
+  week52High: number;
+  week52Low: number;
+  volume: number;
+  avgVolume: number;
+  rsi14?: number;
+  macd?: number;
+  trend: string;
+  sma20?: number;
+  sma60?: number;
+  bollPosition: number;
+  volumeRatio: number;
+}
+
+export interface ComparisonResult {
+  stocks: ComparisonStock[];
+  comparison: {
+    valuation: { headers: string[]; rows: string[][] };
+    technical: { headers: string[]; rows: string[][] };
+    market: { headers: string[]; rows: string[][] };
+  };
+  conclusions: string[];
+  timestamp: string;
+}
+
+export interface RankResult {
+  ranks: (ComparisonStock & { rank: number; score: number })[];
+  criteria: string;
+  timestamp: string;
+}
+
+export interface CompareChartData {
+  code: string;
+  name: string;
+  kline: KLineData[];
+  currentPrice: number;
 }

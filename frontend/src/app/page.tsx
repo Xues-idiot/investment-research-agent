@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { VERSION } from '@/types';
 
 const HISTORY_KEY = 'rho_research_history';
 const ALERTS_KEY = 'rho_monitor_alerts';
@@ -127,7 +128,7 @@ export default function HomePage() {
             transition={{ delay: 0.25 }}
             className="bg-background-600 rounded-xl border border-background-400 p-4 text-center"
           >
-            <div className="text-3xl font-bold text-yellow-400">v1.3</div>
+            <div className="text-3xl font-bold text-yellow-400">v{VERSION}</div>
             <div className="text-gray-400 text-sm">当前版本</div>
           </motion.div>
         </div>

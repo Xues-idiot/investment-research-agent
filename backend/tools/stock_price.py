@@ -74,7 +74,7 @@ def get_indicators(stock_code: str, period: str = "1y") -> dict:
             delta = close_prices.diff()
             gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
             loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
-            rs = gain / loss
+            rs = gain / (loss + 1e-10)  # 防止除零
             rsi = 100 - (100 / (1 + rs)).iloc[-1] if len(close_prices) >= 14 else None
 
             # 计算 KDJ

@@ -13,6 +13,14 @@ if env_file.exists():
     load_dotenv(env_file)
 
 
+def _get_int_env(key: str, default: int) -> int:
+    """安全获取整数环境变量"""
+    try:
+        return int(os.getenv(key, str(default)))
+    except (ValueError, TypeError):
+        return default
+
+
 class Config:
     """Rho 配置类"""
 
@@ -35,7 +43,7 @@ class Config:
     FLASK_ENV: str = os.getenv("FLASK_ENV", "development")
     FLASK_DEBUG: bool = os.getenv("FLASK_DEBUG", "True").lower() == "true"
     API_HOST: str = os.getenv("API_HOST", "0.0.0.0")
-    API_PORT: int = int(os.getenv("API_PORT", "8001"))  # 更新为 8001
+    API_PORT: int = _get_int_env("API_PORT", 8001)
 
     # 前端配置 - 端口已更新为 3444
     FRONTEND_PORT: int = 3444
@@ -45,14 +53,14 @@ class Config:
     LOG_DIR: Path = project_root / "logs"
 
     # 缓存配置
-    CACHE_TTL: int = int(os.getenv("CACHE_TTL", "3600"))
+    CACHE_TTL: int = _get_int_env("CACHE_TTL", 3600)
 
     # LangGraph 配置
-    MAX_RECURSION_LIMIT: int = int(os.getenv("MAX_RECURSION_LIMIT", "100"))
+    MAX_RECURSION_LIMIT: int = _get_int_env("MAX_RECURSION_LIMIT", 100)
 
     # 研究配置
     DEFAULT_STOCK_PERIOD: str = os.getenv("DEFAULT_STOCK_PERIOD", "1y")
-    NEWS_DAYS: int = int(os.getenv("NEWS_DAYS", "7"))
+    NEWS_DAYS: int = _get_int_env("NEWS_DAYS", 7)
 
     # 配色方案 (投研项目特色)
     COLORS = {

@@ -43,10 +43,10 @@ def get_stock_chart_data(stock_code: str):
             history = price_data["history"]
             if isinstance(history, dict) and "Close" in history:
                 closes = history["Close"]
-                opens = history.get("Open", closes)
-                highs = history.get("High", closes)
-                lows = history.get("Low", closes)
-                volumes = history.get("Volume", [0] * len(closes))
+                opens = history.get("Open", None) or closes
+                highs = history.get("High", None) or closes
+                lows = history.get("Low", None) or closes
+                volumes = history.get("Volume", None)
 
                 for i, (date, close) in enumerate(closes.items()):
                     kline.append({
@@ -55,7 +55,7 @@ def get_stock_chart_data(stock_code: str):
                         "high": float(highs.iloc[i]) if hasattr(highs, 'iloc') else float(highs[i]),
                         "low": float(lows.iloc[i]) if hasattr(lows, 'iloc') else float(lows[i]),
                         "close": float(close),
-                        "volume": int(volumes.iloc[i]) if hasattr(volumes, 'iloc') else int(volumes[i]),
+                        "volume": int(volumes.iloc[i]) if hasattr(volumes, 'iloc') else (int(volumes[i]) if volumes else 0),
                     })
         else:
             # 使用模拟数据
@@ -121,11 +121,17 @@ def get_stock_chart_data(stock_code: str):
                     "kdjJ": round(random.uniform(0, 100), 2),
                 })
 
+        # 获取公司名称（带异常处理）
+        try:
+            company_name = StockValidator.get_stock_name(stock_code) or stock_code
+        except Exception:
+            company_name = stock_code
+
         return jsonify({
             "success": True,
             "data": {
                 "stock_code": stock_code,
-                "company_name": StockValidator.get_stock_name(stock_code) or stock_code,
+                "company_name": company_name,
                 "current_price": price_data.get("current_price", 0),
                 "price_change": price_data.get("price_change", 0),
                 "price_change_pct": price_data.get("price_change_pct", 0),

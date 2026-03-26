@@ -55,26 +55,30 @@ def _collect_stock_data(stock_code: str) -> Optional[dict]:
         indicators = get_indicators(stock_code, period="1mo")
         financials = get_financials(stock_code)
 
+        price_change = price_data.get("price_change_pct", 0)
+
         return {
-            "stock_code": stock_code,
+            "stockCode": stock_code,
             "name": info.get("name", stock_code),
             "price": info.get("price", 0),
-            "pe_ratio": info.get("pe_ratio"),
-            "pb_ratio": info.get("pb_ratio"),
-            "market_cap": info.get("market_cap", 0),
-            "dividend_yield": info.get("dividend_yield", 0),
-            "week_52_high": info.get("52w_high", 0),
-            "week_52_low": info.get("52w_low", 0),
+            "change": price_change,
+            "changePercent": price_change,
+            "peRatio": info.get("pe_ratio"),
+            "pbRatio": info.get("pb_ratio"),
+            "marketCap": info.get("market_cap", 0),
+            "dividendYield": info.get("dividend_yield", 0),
+            "week52High": info.get("52w_high", 0),
+            "week52Low": info.get("52w_low", 0),
             "volume": info.get("volume", 0),
-            "avg_volume": info.get("avg_volume", 0),
-            "price_change_pct": price_data.get("price_change_pct", 0),
-            "rsi_14": indicators.get("rsi_14"),
+            "avgVolume": info.get("avg_volume", 0),
+            "priceChangePct": price_change,
+            "rsi14": indicators.get("rsi_14"),
             "macd": indicators.get("macd"),
             "trend": indicators.get("trend", "unknown"),
-            "sma_20": indicators.get("sma_20"),
-            "sma_60": indicators.get("sma_60"),
-            "boll_position": indicators.get("boll_position", 0.5),
-            "volume_ratio": indicators.get("volume_ratio", 1.0),
+            "sma20": indicators.get("sma_20"),
+            "sma60": indicators.get("sma_60"),
+            "bollPosition": indicators.get("boll_position", 0.5),
+            "volumeRatio": indicators.get("volume_ratio", 1.0),
         }
     except Exception as e:
         print(f"Error collecting data for {stock_code}: {e}")
@@ -105,16 +109,16 @@ def _create_valuation_table(stock_data: List[dict]) -> List[dict]:
 
     rows = []
     for stock in stock_data:
-        market_cap_yi = (stock.get("market_cap", 0) or 0) / 1e8
-        dividend = (stock.get("dividend_yield", 0) or 0) * 100
+        market_cap_yi = (stock.get("marketCap", 0) or 0) / 1e8
+        dividend = (stock.get("dividendYield", 0) or 0) * 100
         rows.append({
             "stock": stock.get("name", ""),
-            "code": stock.get("stock_code", ""),
+            "code": stock.get("stockCode", ""),
             "price": f"¥{stock.get('price', 0):.2f}",
-            "pe": f"{stock.get('pe_ratio', 'N/A')}",
-            "pb": f"{stock.get('pb_ratio', 'N/A')}",
+            "pe": f"{stock.get('peRatio', 'N/A')}",
+            "pb": f"{stock.get('pbRatio', 'N/A')}",
             "dividend": f"{dividend:.2f}%",
-            "market_cap": f"{market_cap_yi:.2f}",
+            "marketCap": f"{market_cap_yi:.2f}",
         })
 
     return {"headers": headers, "rows": rows}
@@ -126,30 +130,30 @@ def _create_technical_table(stock_data: List[dict]) -> List[dict]:
 
     rows = []
     for stock in stock_data:
-        rsi = stock.get("rsi_14")
+        rsi = stock.get("rsi14")
         rsi_str = f"{rsi:.1f}" if rsi else "N/A"
 
         macd = stock.get("macd", 0)
         macd_str = f"{macd:.2f}" if macd else "N/A"
 
-        sma20 = stock.get("sma_20")
+        sma20 = stock.get("sma20")
         sma20_str = f"¥{sma20:.2f}" if sma20 else "N/A"
 
-        sma60 = stock.get("sma_60")
+        sma60 = stock.get("sma60")
         sma60_str = f"¥{sma60:.2f}" if sma60 else "N/A"
 
-        boll = stock.get("boll_position", 0.5)
+        boll = stock.get("bollPosition", 0.5)
         boll_str = f"{boll*100:.1f}%"
 
         rows.append({
             "stock": stock.get("name", ""),
-            "code": stock.get("stock_code", ""),
+            "code": stock.get("stockCode", ""),
             "rsi": rsi_str,
             "macd": macd_str,
             "trend": stock.get("trend", "unknown"),
             "sma20": sma20_str,
             "sma60": sma60_str,
-            "boll_position": boll_str,
+            "bollPosition": boll_str,
         })
 
     return {"headers": headers, "rows": rows}
@@ -164,17 +168,17 @@ def _create_market_table(stock_data: List[dict]) -> List[dict]:
         volume_wan = (stock.get("volume", 0) or 0) / 10000
         volume_str = f"{volume_wan:.2f}万"
 
-        price_change = stock.get("price_change_pct", 0)
+        price_change = stock.get("priceChangePct", 0)
         change_str = f"{price_change:+.2f}%"
 
         rows.append({
             "stock": stock.get("name", ""),
-            "code": stock.get("stock_code", ""),
-            "price_change": change_str,
-            "high_52w": f"¥{stock.get('week_52_high', 0):.2f}",
-            "low_52w": f"¥{stock.get('week_52_low', 0):.2f}",
+            "code": stock.get("stockCode", ""),
+            "priceChange": change_str,
+            "week52High": f"¥{stock.get('week52High', 0):.2f}",
+            "week52Low": f"¥{stock.get('week52Low', 0):.2f}",
             "volume": volume_str,
-            "volume_ratio": f"{stock.get('volume_ratio', 1.0):.2f}",
+            "volumeRatio": f"{stock.get('volumeRatio', 1.0):.2f}",
         })
 
     return {"headers": headers, "rows": rows}
@@ -185,21 +189,21 @@ def _generate_conclusions(stock_data: List[dict]) -> List[str]:
     conclusions = []
 
     # PE 最低的股票
-    valid_pe = [(s, s.get("pe_ratio")) for s in stock_data if s.get("pe_ratio")]
+    valid_pe = [(s, s.get("peRatio")) for s in stock_data if s.get("peRatio")]
     if valid_pe:
         valid_pe.sort(key=lambda x: x[1])
         cheapest = valid_pe[0]
         conclusions.append(f"**估值最低**: {cheapest[0].get('name')}，PE仅 {cheapest[1]:.2f}")
 
     # 股息率最高的股票
-    valid_div = [(s, s.get("dividend_yield", 0)) for s in stock_data]
+    valid_div = [(s, s.get("dividendYield", 0)) for s in stock_data]
     if valid_div:
         valid_div.sort(key=lambda x: x[1], reverse=True)
         highest_div = valid_div[0]
         conclusions.append(f"**股息率最高**: {highest_div[0].get('name')}，股息率 {highest_div[1]*100:.2f}%")
 
     # RSI 超卖/超买
-    valid_rsi = [(s, s.get("rsi_14")) for s in stock_data if s.get("rsi_14")]
+    valid_rsi = [(s, s.get("rsi14")) for s in stock_data if s.get("rsi14")]
     for stock, rsi in valid_rsi:
         if rsi < 30:
             conclusions.append(f"**{stock.get('name')} RSI超卖({rsi:.1f})**，可能存在反弹机会")
@@ -207,7 +211,7 @@ def _generate_conclusions(stock_data: List[dict]) -> List[str]:
             conclusions.append(f"**{stock.get('name')} RSI超买({rsi:.1f})**，注意回调风险")
 
     # 趋势最强的股票
-    valid_trend = [(s, s.get("sma_20", 0), s.get("sma_60", 0), s.get("price", 0)) for s in stock_data]
+    valid_trend = [(s, s.get("sma20", 0), s.get("sma60", 0), s.get("price", 0)) for s in stock_data]
     bullish = [s for s, ma20, ma60, price in valid_trend if ma20 and ma60 and price > ma20 > ma60]
     if bullish:
         conclusions.append(f"**多头排列**: {', '.join([s.get('name', '') for s in bullish])}")
@@ -217,7 +221,7 @@ def _generate_conclusions(stock_data: List[dict]) -> List[str]:
         conclusions.append(f"**空头排列**: {', '.join([s.get('name', '') for s in bearish])}")
 
     # 成交量异常
-    valid_vol = [(s, s.get("volume_ratio", 1.0)) for s in stock_data]
+    valid_vol = [(s, s.get("volumeRatio", 1.0)) for s in stock_data]
     high_vol = [s for s, vr in valid_vol if vr > 2.0]
     if high_vol:
         conclusions.append(f"**成交量放大**: {', '.join([s.get('name', '') for s in high_vol])}")
@@ -248,8 +252,8 @@ def rank_stocks(stock_codes: List[str], criteria: str = "comprehensive") -> List
         # 价值投资排名：低PE + 高股息
         for stock in stock_data:
             score = 0
-            pe = stock.get("pe_ratio")
-            div = stock.get("dividend_yield", 0)
+            pe = stock.get("peRatio")
+            div = stock.get("dividendYield", 0)
             if pe and pe > 0:
                 score += (30 / pe)  # PE越低越好
             score += div * 100  # 股息越高越好
@@ -260,8 +264,8 @@ def rank_stocks(stock_codes: List[str], criteria: str = "comprehensive") -> List
         # 成长股排名：价格趋势 + 成交量
         for stock in stock_data:
             score = 0
-            price_change = stock.get("price_change_pct", 0)
-            volume_ratio = stock.get("volume_ratio", 1.0)
+            price_change = stock.get("priceChangePct", 0)
+            volume_ratio = stock.get("volumeRatio", 1.0)
             score = price_change + (volume_ratio - 1) * 10
             stock["score"] = score
         stock_data.sort(key=lambda x: x.get("score", 0), reverse=True)
@@ -270,7 +274,7 @@ def rank_stocks(stock_codes: List[str], criteria: str = "comprehensive") -> List
         # 技术面排名：RSI + 趋势 + 布林带
         for stock in stock_data:
             score = 50  # 基础分
-            rsi = stock.get("rsi_14", 50)
+            rsi = stock.get("rsi14", 50)
             if rsi:
                 if 40 <= rsi <= 60:
                     score += 10  # 正常区间
@@ -285,7 +289,7 @@ def rank_stocks(stock_codes: List[str], criteria: str = "comprehensive") -> List
             elif "空头" in trend:
                 score -= 20
 
-            boll = stock.get("boll_position", 0.5)
+            boll = stock.get("bollPosition", 0.5)
             if 0.3 <= boll <= 0.7:
                 score += 10  # 布林带正常位置
 
@@ -298,16 +302,16 @@ def rank_stocks(stock_codes: List[str], criteria: str = "comprehensive") -> List
             score = 0
 
             # 估值 (30分)
-            pe = stock.get("pe_ratio")
+            pe = stock.get("peRatio")
             if pe and pe > 0:
                 score += min(30, 30 / pe * 10)
 
             # 股息 (20分)
-            div = stock.get("dividend_yield", 0)
+            div = stock.get("dividendYield", 0)
             score += min(20, div * 1000)
 
             # 技术 (30分)
-            rsi = stock.get("rsi_14", 50)
+            rsi = stock.get("rsi14", 50)
             if 40 <= rsi <= 60:
                 score += 15
             elif 30 <= rsi < 40 or 60 < rsi <= 70:
@@ -322,7 +326,7 @@ def rank_stocks(stock_codes: List[str], criteria: str = "comprehensive") -> List
                 score += 5
 
             # 趋势 (20分)
-            price_change = stock.get("price_change_pct", 0)
+            price_change = stock.get("priceChangePct", 0)
             score += min(20, max(-10, price_change * 2))
 
             stock["score"] = round(score, 2)

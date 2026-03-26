@@ -113,7 +113,7 @@ class PortfolioOptimizer:
             total_invested += invested
 
             holdings.append({
-                "stock_code": stock.get("stock_code"),
+                "stock_code": stock.get("stockCode"),
                 "stock_name": stock.get("name"),
                 "weight": weight,
                 "shares": shares,

@@ -5,10 +5,13 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { API_BASE_URL } from '@/lib/api';
+import { convertKeysToCamelCase } from '@/lib/utils';
+import { ResearchReport } from '@/types';
 
 interface StreamingSearchProps {
   onProgress: (agent: string, message: string) => void;
-  onComplete: (data: any) => void;
+  onComplete: (data: ResearchReport) => void;
   onError: (error: string) => void;
 }
 
@@ -29,7 +32,7 @@ export default function StreamingSearch({ onProgress, onComplete, onError }: Str
     abortControllerRef.current = abortController;
 
     try {
-      const response = await fetch('http://localhost:8001/api/research/stream', {
+      const response = await fetch(`${API_BASE_URL}/api/research/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +71,7 @@ export default function StreamingSearch({ onProgress, onComplete, onError }: Str
               if (data.event === 'agent') {
                 onProgress(data.agent, data.message);
               } else if (data.event === 'complete') {
-                onComplete(data.data);
+                onComplete(convertKeysToCamelCase(data.data));
                 setLoading(false);
                 return;
               } else if (data.event === 'error') {

@@ -24,6 +24,14 @@ export default function KLineChart({ data, symbol = 'Stock', width = 800, height
   const chartRef = useRef<IChartApi | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenHeight, setFullscreenHeight] = useState(0);
+
+  // 获取全屏时的高度（避免直接访问window导致hydration不匹配）
+  useEffect(() => {
+    if (isFullscreen) {
+      setFullscreenHeight(window.innerHeight - 100);
+    }
+  }, [isFullscreen]);
 
   const handleResetZoom = useCallback(() => {
     if (chartRef.current) {
@@ -218,7 +226,7 @@ export default function KLineChart({ data, symbol = 'Stock', width = 800, height
           </span>
         </div>
       </div>
-      <div ref={chartContainerRef} className="w-full" style={{ height: `${isFullscreen ? window.innerHeight - 100 : height}px` }} />
+      <div ref={chartContainerRef} className="w-full" style={{ height: `${isFullscreen ? fullscreenHeight : height}px` }} />
       <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
         <span>🖱️ 滚轮缩放 | 拖拽平移 |十字光标查看详情</span>
         <span>数据来源: yfinance | 更新时间: {new Date().toLocaleTimeString('zh-CN')}</span>

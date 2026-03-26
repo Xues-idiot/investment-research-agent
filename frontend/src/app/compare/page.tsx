@@ -4,22 +4,9 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ComparisonBarChart, ComparisonKLineChart } from '@/components/charts';
 import { useFavorites } from '@/hooks/useFavorites';
-
-interface CompareResult {
-  stocks: Array<{
-    code: string;
-    name: string;
-    price: number;
-    change: number;
-    changePercent: number;
-  }>;
-  comparison: {
-    valuation: { headers: string[]; rows: string[][] };
-    technical: { headers: string[]; rows: string[][] };
-    market: { headers: string[]; rows: string[][] };
-  };
-  conclusions: string[];
-}
+import { compareStocks, rankStocks, getCompareCharts } from '@/lib/api';
+import { sanitizeHtml } from '@/lib/utils';
+import { ComparisonResult, RankResult } from '@/types';
 
 interface ChartData {
   charts: Array<{
@@ -32,15 +19,19 @@ interface ChartData {
       low: number;
       close: number;
     }>;
-    current_price: number;
+    currentPrice: number;
   }>;
   count: number;
 }
 
+// Unified result type for both compare and rank
+type CompareResponse = ComparisonResult | RankResult;
+
 export default function ComparePage() {
   const [stockCodes, setStockCodes] = useState('600519,000858,000568');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<CompareResult | null>(null);
+  const [result, setResult] = useState<ComparisonResult | RankResult | null>(null);
+  const [isRankResult, setIsRankResult] = useState(false);
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [rankCriteria, setRankCriteria] = useState('comprehensive');
@@ -55,32 +46,22 @@ export default function ComparePage() {
 
     setLoading(true);
     setError(null);
+    setIsRankResult(false);
 
     try {
       // 并行请求对比数据和图表数据
-      const [compareRes, chartRes] = await Promise.all([
-        fetch('http://localhost:8001/api/compare', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ stock_codes: codes }),
-        }),
-        fetch('http://localhost:8001/api/compare/charts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ stock_codes: codes }),
-        }),
+      const [compareData, chartResponse] = await Promise.all([
+        compareStocks(codes),
+        getCompareCharts(codes),
       ]);
 
-      const compareData = await compareRes.json();
-      const chartResponse = await chartRes.json();
-
-      if (compareData.success) {
+      if (compareData.success && compareData.data) {
         setResult(compareData.data);
       } else {
         setError(compareData.error || '对比失败');
       }
 
-      if (chartResponse.success) {
+      if (chartResponse.success && chartResponse.data) {
         setChartData(chartResponse.data);
       }
     } catch (err) {
@@ -99,15 +80,11 @@ export default function ComparePage() {
 
     setLoading(true);
     setError(null);
+    setIsRankResult(true);
 
     try {
-      const response = await fetch('http://localhost:8001/api/compare/rank', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stock_codes: codes, criteria: rankCriteria }),
-      });
-      const data = await response.json();
-      if (data.success) {
+      const data = await rankStocks(codes, rankCriteria);
+      if (data.success && data.data) {
         setResult(data.data);
       } else {
         setError(data.error || '排名失败');
@@ -190,7 +167,7 @@ export default function ComparePage() {
         </motion.div>
 
         {/* Results */}
-        {result && (
+        {result && !isRankResult && 'stocks' in result && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -201,19 +178,19 @@ export default function ComparePage() {
               <h2 className="text-xl font-semibold text-white mb-4">股票概览</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {result.stocks.map((stock) => (
-                  <div key={stock.code} className="bg-background-500 rounded-lg p-4">
+                  <div key={stock.stockCode} className="bg-background-500 rounded-lg p-4">
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <p className="text-white font-medium">{stock.name}</p>
-                        <p className="text-gray-400 text-sm">{stock.code}</p>
+                        <p className="text-gray-400 text-sm">{stock.stockCode}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => toggleFavorite(stock.code, stock.name)}
+                          onClick={() => toggleFavorite(stock.stockCode, stock.name)}
                           className="text-xl hover:scale-110 transition-transform"
-                          title={isFavorite(stock.code) ? '取消收藏' : '添加收藏'}
+                          title={isFavorite(stock.stockCode) ? '取消收藏' : '添加收藏'}
                         >
-                          {isFavorite(stock.code) ? '⭐' : '☆'}
+                          {isFavorite(stock.stockCode) ? '⭐' : '☆'}
                         </button>
                         <span className={`text-sm font-medium ${stock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                           {stock.change >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
@@ -227,7 +204,7 @@ export default function ComparePage() {
             </div>
 
             {/* K-line Comparison Chart */}
-            {chartData && chartData.charts.length >= 2 && (
+            {chartData && chartData.charts && chartData.charts.length >= 2 && (
               <ComparisonKLineChart data={chartData.charts} height={350} />
             )}
 
@@ -252,41 +229,104 @@ export default function ComparePage() {
             </div>
 
             {/* Comparison Tables */}
+            {result.comparison && result.comparison.valuation && (
+              <div className="bg-background-600 rounded-xl border border-background-400 p-6">
+                <h2 className="text-xl font-semibold text-white mb-4">估值对比</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-background-400">
+                        {result.comparison.valuation.headers.map((h, i) => (
+                          <th key={i} className="text-left py-3 px-4 text-gray-400 text-sm font-medium">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {result.comparison.valuation.rows.map((row, i) => (
+                        <tr key={i} className="border-b border-background-500">
+                          {Object.values(row).map((cell, j) => (
+                            <td key={j} className="py-3 px-4 text-white text-sm">{cell}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Conclusions */}
+            {result.conclusions && result.conclusions.length > 0 && (
+              <div className="bg-background-600 rounded-xl border border-background-400 p-6">
+                <h2 className="text-xl font-semibold text-white mb-4">分析结论</h2>
+                <ul className="space-y-2">
+                  {result.conclusions.map((conclusion, i) => (
+                    <li key={i} className="text-gray-300 text-sm flex items-start gap-2">
+                      <span className="text-primary-400">•</span>
+                      <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(conclusion) }} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Rank Results */}
+        {result && isRankResult && 'ranks' in result && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            {/* Rank Summary */}
             <div className="bg-background-600 rounded-xl border border-background-400 p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">估值对比</h2>
+              <h2 className="text-xl font-semibold text-white mb-4">
+                股票排名 - {result.criteria === 'value' ? '估值优先' : result.criteria === 'growth' ? '成长性优先' : result.criteria === 'technical' ? '技术面优先' : '综合评分'}
+              </h2>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-background-400">
-                      {result.comparison.valuation.headers.map((h, i) => (
-                        <th key={i} className="text-left py-3 px-4 text-gray-400 text-sm font-medium">{h}</th>
-                      ))}
+                      <th className="text-left py-3 px-4 text-gray-400 text-sm font-medium">排名</th>
+                      <th className="text-left py-3 px-4 text-gray-400 text-sm font-medium">股票</th>
+                      <th className="text-right py-3 px-4 text-gray-400 text-sm font-medium">代码</th>
+                      <th className="text-right py-3 px-4 text-gray-400 text-sm font-medium">当前价</th>
+                      <th className="text-right py-3 px-4 text-gray-400 text-sm font-medium">综合评分</th>
+                      <th className="text-right py-3 px-4 text-gray-400 text-sm font-medium">操作</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {result.comparison.valuation.rows.map((row, i) => (
-                      <tr key={i} className="border-b border-background-500">
-                        {row.map((cell, j) => (
-                          <td key={j} className="py-3 px-4 text-white text-sm">{cell}</td>
-                        ))}
+                    {result.ranks.map((stock) => (
+                      <tr key={stock.rank} className="border-b border-background-500">
+                        <td className="py-3 px-4">
+                          <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-bold ${
+                            stock.rank === 1 ? 'bg-yellow-500/20 text-yellow-400' :
+                            stock.rank === 2 ? 'bg-gray-400/20 text-gray-300' :
+                            stock.rank === 3 ? 'bg-orange-400/20 text-orange-400' :
+                            'bg-background-500 text-gray-400'
+                          }`}>
+                            {stock.rank}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-white font-medium">{stock.name}</td>
+                        <td className="py-3 px-4 text-gray-400 text-right">{stock.stockCode}</td>
+                        <td className="py-3 px-4 text-white text-right">¥{stock.price.toFixed(2)}</td>
+                        <td className="py-3 px-4 text-primary-400 text-right font-bold">{stock.score.toFixed(2)}</td>
+                        <td className="py-3 px-4 text-right">
+                          <button
+                            onClick={() => toggleFavorite(stock.stockCode, stock.name)}
+                            className="text-xl hover:scale-110 transition-transform"
+                            title={isFavorite(stock.stockCode) ? '取消收藏' : '添加收藏'}
+                          >
+                            {isFavorite(stock.stockCode) ? '⭐' : '☆'}
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-            </div>
-
-            {/* Conclusions */}
-            <div className="bg-background-600 rounded-xl border border-background-400 p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">分析结论</h2>
-              <ul className="space-y-2">
-                {result.conclusions.map((conclusion, i) => (
-                  <li key={i} className="text-gray-300 text-sm flex items-start gap-2">
-                    <span className="text-primary-400">•</span>
-                    <span dangerouslySetInnerHTML={{ __html: conclusion }} />
-                  </li>
-                ))}
-              </ul>
             </div>
           </motion.div>
         )}

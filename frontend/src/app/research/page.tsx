@@ -2,7 +2,7 @@
 
 // Research Page - 投资研究页面 (支持流式输出+K线图表)
 
-import { useState, useCallback, useEffect, Suspense } from 'react';
+import { useState, useCallback, useEffect, useRef, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import StockSearch from '@/components/StockSearch';
 import StockSearchAutocomplete from '@/components/StockSearchAutocomplete';
@@ -16,6 +16,8 @@ import { KLineChart, TechnicalChart } from '@/components/charts';
 import { useFavorites } from '@/hooks/useFavorites';
 import BatchResearch from '@/components/BatchResearch';
 import Toast, { toast, useToast } from '@/components/Toast';
+import { researchStock, getStockChartData, ApiError } from '@/lib/api';
+import { ChartData } from '@/types';
 
 const HISTORY_KEY = 'rho_research_history';
 const MAX_HISTORY = 10;
@@ -39,27 +41,6 @@ interface ResearchResult {
   };
 }
 
-interface ChartData {
-  kline: {
-    time: string;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
-  }[];
-  technical: {
-    time: string;
-    macd: number;
-    macdSignal: number;
-    macdHistogram: number;
-    rsi: number;
-    kdjK: number;
-    kdjD: number;
-    kdjJ: number;
-  }[];
-}
-
 interface HistoryItem {
   stockCode: string;
   companyName: string;
@@ -80,9 +61,18 @@ function ResearchPage() {
   const [showCharts, setShowCharts] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [historyFilter, setHistoryFilter] = useState('');
+  const [historyRiskFilter, setHistoryRiskFilter] = useState<string>('ALL');
+  const [historySort, setHistorySort] = useState<'date' | 'risk'>('date');
   const [researchStartTime, setResearchStartTime] = useState<number>(0);
   const { favorites, removeFavorite } = useFavorites();
   const { toasts, removeToast } = useToast();
+  const toastRef = useRef<(options: Omit<import('@/components/Toast').ToastMessage, 'id'>) => void>(toast);
+  toastRef.current = toast; // 保持ref最新
+
+  // 批量研究队列状态
+  const [batchQueue, setBatchQueue] = useState<string[]>([]);
+  const [batchResults, setBatchResults] = useState<ResearchResult[]>([]);
+  const [currentBatchIndex, setCurrentBatchIndex] = useState(0);
 
   // 加载历史记录
   useEffect(() => {
@@ -121,12 +111,21 @@ function ResearchPage() {
   }, []);
 
   // 过滤后的历史记录
-  const filteredHistory = historyFilter.trim()
+  const filteredHistory = (historyFilter.trim()
     ? history.filter(h =>
         h.stockCode.includes(historyFilter.toUpperCase()) ||
         h.companyName.includes(historyFilter)
       )
-    : history;
+    : history
+  )
+    .filter(h => historyRiskFilter === 'ALL' || h.riskLevel === historyRiskFilter)
+    .sort((a, b) => {
+      if (historySort === 'date') {
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      } else {
+        return b.riskScore - a.riskScore;
+      }
+    });
 
   // 从历史恢复
   const loadFromHistory = useCallback((item: HistoryItem) => {
@@ -148,6 +147,73 @@ function ResearchPage() {
 
   useKeyboardShortcuts(shortcuts);
 
+  // 处理批量研究队列
+  const processBatchQueue = useCallback(async () => {
+    if (batchQueue.length === 0 || currentBatchIndex >= batchQueue.length) {
+      // 批量研究完成
+      if (batchQueue.length > 0) {
+        toastRef.current({
+          type: 'success',
+          title: '批量研究完成',
+          message: `已完成 ${batchResults.length} 只股票的研究`,
+        });
+      }
+      setBatchQueue([]);
+      setCurrentBatchIndex(0);
+      setLoading(false);
+      return;
+    }
+
+    const nextStock = batchQueue[currentBatchIndex];
+    setCurrentAgent('批量');
+    setCurrentMessage(`正在研究 ${nextStock} (${currentBatchIndex + 1}/${batchQueue.length})...`);
+
+    try {
+      const data = await researchStock({ stock_code: nextStock });
+
+      if (data.success && data.data) {
+        const newResult = data.data;
+        setBatchResults(prev => [...prev, newResult]);
+        saveToHistory(newResult);
+        // 如果是第一个，设置为主显示结果
+        if (currentBatchIndex === 0) {
+          setResult(newResult);
+        }
+        // 自动开始下一只
+        setCurrentBatchIndex(prev => prev + 1);
+        // 使用 setTimeout 确保状态更新后再开始下一个
+        setTimeout(() => processBatchQueue(), 500);
+      } else {
+        setError(`研究 ${nextStock} 失败: ${data.error}`);
+        // 跳过失败的，继续下一个
+        setCurrentBatchIndex(prev => prev + 1);
+        setTimeout(() => processBatchQueue(), 500);
+      }
+    } catch (err) {
+      setError(`研究 ${nextStock} 时网络错误`);
+      setCurrentBatchIndex(prev => prev + 1);
+      setTimeout(() => processBatchQueue(), 500);
+    }
+  }, [batchQueue, currentBatchIndex, batchResults, saveToHistory]);
+
+  // 开始批量研究
+  const startBatchResearch = useCallback((stockCodes: string[]) => {
+    if (stockCodes.length === 0) return;
+
+    setBatchQueue(stockCodes);
+    setBatchResults([]);
+    setCurrentBatchIndex(0);
+    setResult(null);
+    setChartData(null);
+    setShowCharts(false);
+    setError(null);
+    setResearchStartTime(Date.now());
+    setLoading(true);
+
+    // 开始处理队列
+    processBatchQueue();
+  }, [processBatchQueue]);
+
   // 非流式处理
   const handleResearch = async (stockCode: string) => {
     setLoading(true);
@@ -157,17 +223,9 @@ function ResearchPage() {
     setResearchStartTime(Date.now());
 
     try {
-      const response = await fetch('http://localhost:8001/api/research', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ stock_code: stockCode }),
-      });
+      const data = await researchStock({ stock_code: stockCode });
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (data.success && data.data) {
         setResult(data.data);
         saveToHistory(data.data);
       } else {
@@ -207,9 +265,8 @@ function ResearchPage() {
   // 获取图表数据
   const fetchChartData = async (stockCode: string) => {
     try {
-      const response = await fetch(`http://localhost:8001/api/stock/chart/${stockCode}`);
-      const data = await response.json();
-      if (data.success) {
+      const data = await getStockChartData(stockCode);
+      if (data.success && data.data) {
         setChartData(data.data);
         setShowCharts(true);
       }
@@ -327,13 +384,7 @@ function ResearchPage() {
               transition={{ duration: 0.3 }}
             >
               <BatchResearch
-                onResearch={(codes) => {
-                  // For batch, we just research the first one for now
-                  // The backend would need batch support
-                  if (codes.length > 0) {
-                    handleResearch(codes[0]);
-                  }
-                }}
+                onResearch={startBatchResearch}
                 loading={loading}
               />
             </motion.div>
@@ -499,18 +550,47 @@ function ResearchPage() {
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                       📜 最近研究
+                      {filteredHistory.length > 0 && (
+                        <span className="text-sm text-gray-500 font-normal">({filteredHistory.length}/{history.length})</span>
+                      )}
                     </h3>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={historyFilter}
-                        onChange={(e) => setHistoryFilter(e.target.value)}
-                        placeholder="搜索..."
-                        className="px-3 py-1 text-sm bg-background-500 border border-background-400 rounded text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
-                      />
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {/* Search */}
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={historyFilter}
+                          onChange={(e) => setHistoryFilter(e.target.value)}
+                          placeholder="搜索股票..."
+                          className="px-3 py-1 pl-8 text-sm bg-background-500 border border-background-400 rounded text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 w-40"
+                        />
+                        <svg className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </div>
+                      {/* Risk Filter */}
+                      <select
+                        value={historyRiskFilter}
+                        onChange={(e) => setHistoryRiskFilter(e.target.value)}
+                        className="px-2 py-1 text-sm bg-background-500 border border-background-400 rounded text-white focus:outline-none focus:border-primary-500"
+                      >
+                        <option value="ALL">全部风险</option>
+                        <option value="HIGH">高风险</option>
+                        <option value="MEDIUM">中风险</option>
+                        <option value="LOW">低风险</option>
+                      </select>
+                      {/* Sort Toggle */}
+                      <button
+                        onClick={() => setHistorySort(s => s === 'date' ? 'risk' : 'date')}
+                        className="px-2 py-1 text-xs text-gray-400 hover:text-white bg-background-500 hover:bg-background-400 rounded transition-colors flex items-center gap-1"
+                        title={historySort === 'date' ? '按时间排序' : '按风险排序'}
+                      >
+                        {historySort === 'date' ? '📅 时间' : '📊 风险'}
+                      </button>
+                      {/* Clear */}
                       <button
                         onClick={clearHistory}
-                        className="px-3 py-1 text-xs text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 rounded transition-colors"
+                        className="px-2 py-1 text-xs text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 rounded transition-colors"
                       >
                         清空
                       </button>

@@ -2,16 +2,25 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import {
+  getMonitorStatus,
+  getAlerts,
+  addAlert,
+  removeAlert,
+  checkAlerts,
+  startMonitor,
+  stopMonitor,
+} from '@/lib/api';
 
 const STORAGE_KEY = 'rho_monitor_alerts';
 
 interface Alert {
-  stock_code: string;
-  alert_type: string;
+  stockCode: string;
+  alertType: string;
   threshold: number;
   enabled: boolean;
-  triggered_at: string | null;
-  message: string;
+  triggeredAt?: string | null;
+  message?: string;
   id?: string; // localStorage用
 }
 
@@ -88,13 +97,10 @@ export default function MonitorPage() {
 
   const fetchStatus = async () => {
     try {
-      const response = await fetch('http://localhost:8001/api/monitor/status');
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          setStatus(data.data);
-          setBackendOnline(true);
-        }
+      const data = await getMonitorStatus();
+      if (data.success && data.data) {
+        setStatus(data.data);
+        setBackendOnline(true);
       } else {
         setBackendOnline(false);
       }
@@ -105,18 +111,15 @@ export default function MonitorPage() {
 
   const fetchAlerts = async () => {
     try {
-      const response = await fetch('http://localhost:8001/api/monitor/alerts');
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          const backendAlerts = data.data.alerts.map((a: Alert) => ({
-            ...a,
-            id: `${a.stock_code}_${a.alert_type}_${Date.now()}`
-          }));
-          setAlerts(backendAlerts);
-          saveAlertsToStorage(backendAlerts);
-          setBackendOnline(true);
-        }
+      const data = await getAlerts();
+      if (data.success && data.data) {
+        const backendAlerts = data.data.alerts.map((a: Alert) => ({
+          ...a,
+          id: `${a.stockCode}_${a.alertType}_${Date.now()}`
+        }));
+        setAlerts(backendAlerts);
+        saveAlertsToStorage(backendAlerts);
+        setBackendOnline(true);
       } else {
         setBackendOnline(false);
         // 后端离线，从localStorage加载
@@ -184,11 +187,11 @@ export default function MonitorPage() {
 
     // 乐观更新：先添加到本地存储
     const newAlert: Alert = {
-      stock_code: stockCode,
-      alert_type: alertType,
+      stockCode: stockCode,
+      alertType: alertType,
       threshold: parseFloat(threshold),
       enabled: true,
-      triggered_at: null,
+      triggeredAt: null,
       message: '',
       id: `${stockCode}_${alertType}_${Date.now()}`,
     };
@@ -197,17 +200,12 @@ export default function MonitorPage() {
     saveAlertsToStorage(updatedAlerts);
 
     try {
-      const response = await fetch('http://localhost:8001/api/monitor/alerts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          stock_code: stockCode,
-          alert_type: alertType,
-          threshold: parseFloat(threshold),
-          enabled: true,
-        }),
+      const data = await addAlert({
+        stock_code: stockCode,
+        alert_type: alertType,
+        threshold: parseFloat(threshold),
+        enabled: true,
       });
-      const data = await response.json();
       if (data.success) {
         setSuccess('告警添加成功');
         fetchAlerts(); // 重新同步
@@ -216,9 +214,9 @@ export default function MonitorPage() {
         setThreshold('');
       } else {
         setError(data.error || '添加告警失败');
-        // 后端失败，回滚本地更新
-        setAlerts(alerts);
-        saveAlertsToStorage(alerts);
+        // 后端失败，回滚本地更新 - 使用updatedAlerts而非过时的闭包alerts
+        setAlerts(updatedAlerts);
+        saveAlertsToStorage(updatedAlerts);
       }
     } catch (err) {
       // 网络错误，但仍保留本地存储的告警
@@ -234,18 +232,13 @@ export default function MonitorPage() {
   const handleDeleteAlert = async (stockCode: string, alertType?: string) => {
     // 乐观更新：先从本地存储删除
     const updatedAlerts = alerts.filter(
-      (a) => !(a.stock_code === stockCode && (!alertType || a.alert_type === alertType))
+      (a) => !(a.stockCode === stockCode && (!alertType || a.alertType === alertType))
     );
     setAlerts(updatedAlerts);
     saveAlertsToStorage(updatedAlerts);
 
     try {
-      let url = `http://localhost:8001/api/monitor/alerts/${stockCode}`;
-      if (alertType) {
-        url += `?alert_type=${alertType}`;
-      }
-      const response = await fetch(url, { method: 'DELETE' });
-      const data = await response.json();
+      const data = await removeAlert(stockCode, alertType);
       if (data.success) {
         setSuccess('告警已删除');
         fetchAlerts(); // 重新同步
@@ -266,13 +259,10 @@ export default function MonitorPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:8001/api/monitor/check', {
-        method: 'POST',
-      });
-      const data = await response.json();
-      if (data.success) {
+      const data = await checkAlerts();
+      if (data.success && data.data) {
         const count = data.data.triggered_count;
-        if (count > 0) {
+        if (count && count > 0) {
           setSuccess(`检测到 ${count} 个告警触发！`);
         } else {
           setSuccess('暂无告警触发');
@@ -290,10 +280,7 @@ export default function MonitorPage() {
 
   const handleStartMonitor = async () => {
     try {
-      const response = await fetch('http://localhost:8001/api/monitor/start?interval=60', {
-        method: 'POST',
-      });
-      const data = await response.json();
+      const data = await startMonitor(60);
       if (data.success) {
         setSuccess('监控已启动');
         fetchStatus();
@@ -307,10 +294,7 @@ export default function MonitorPage() {
 
   const handleStopMonitor = async () => {
     try {
-      const response = await fetch('http://localhost:8001/api/monitor/stop', {
-        method: 'POST',
-      });
-      const data = await response.json();
+      const data = await stopMonitor();
       if (data.success) {
         setSuccess('监控已停止');
         fetchStatus();
@@ -526,7 +510,7 @@ export default function MonitorPage() {
                 <div
                   key={index}
                   className={`p-4 rounded-lg border ${
-                    alert.triggered_at
+                    alert.triggeredAt
                       ? 'bg-red-500/10 border-red-500/30'
                       : 'bg-background-500 border-background-400'
                   }`}
@@ -534,30 +518,30 @@ export default function MonitorPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-3">
-                        <span className="text-white font-medium">{alert.stock_code}</span>
+                        <span className="text-white font-medium">{alert.stockCode}</span>
                         <span className="text-gray-400 text-sm">
-                          {alertTypeLabels[alert.alert_type] || alert.alert_type}
+                          {alertTypeLabels[alert.alertType] || alert.alertType}
                         </span>
                         <span className="text-primary-400 font-medium">
-                          {alert.alert_type === 'volume_spike'
+                          {alert.alertType === 'volume_spike'
                             ? `${alert.threshold}倍`
-                            : alert.alert_type === 'price_change'
+                            : alert.alertType === 'price_change'
                             ? `${alert.threshold}%`
                             : `¥${alert.threshold}`}
                         </span>
-                        {alert.triggered_at && (
+                        {alert.triggeredAt && (
                           <span className="text-red-400 text-sm">已触发</span>
                         )}
                       </div>
                       {alert.message && (
                         <p className="text-gray-400 text-sm mt-1">{alert.message}</p>
                       )}
-                      {alert.triggered_at && (
-                        <p className="text-gray-500 text-xs mt-1">触发时间: {alert.triggered_at}</p>
+                      {alert.triggeredAt && (
+                        <p className="text-gray-500 text-xs mt-1">触发时间: {alert.triggeredAt}</p>
                       )}
                     </div>
                     <button
-                      onClick={() => handleDeleteAlert(alert.stock_code, alert.alert_type)}
+                      onClick={() => handleDeleteAlert(alert.stockCode, alert.alertType)}
                       className="px-3 py-1 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors"
                     >
                       删除

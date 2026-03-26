@@ -172,6 +172,29 @@ def export_report_to_markdown(
         }
 
 
+def _sanitize_html(html: str) -> str:
+    """净化HTML内容，防止XSS攻击"""
+    import re
+
+    if not html:
+        return ''
+
+    # 移除script标签
+    html = re.sub(r'<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>', '', html, flags=re.IGNORECASE)
+
+    # 移除on事件处理器
+    html = re.sub(r'\s+on\w+\s*=\s*["\'][^"\']*["\']', '', html, flags=re.IGNORECASE)
+    html = re.sub(r'\s+on\w+\s*=\s*[^\s>]+', '', html, flags=re.IGNORECASE)
+
+    # 移除javascript:协议
+    html = re.sub(r'href\s*=\s*["\']javascript:[^"\']*["\']', 'href="#"', html, flags=re.IGNORECASE)
+
+    # 移除eval和相关危险函数
+    html = re.sub(r'\beval\s*\([^)]*\)', '', html, flags=re.IGNORECASE)
+
+    return html
+
+
 def _markdown_to_html(markdown_content: str, title: str, author: str = "Rho Agent") -> str:
     """将 Markdown 转换为 HTML"""
 
@@ -180,6 +203,9 @@ def _markdown_to_html(markdown_content: str, title: str, author: str = "Rho Agen
         markdown_content,
         extensions=['tables', 'fenced_code', 'codehilite']
     )
+
+    # 净化HTML，防止XSS
+    body_html = _sanitize_html(body_html)
 
     # 构建完整 HTML 文档
     html = f"""<!DOCTYPE html>

@@ -16,7 +16,7 @@ interface StockKLine {
     low: number;
     close: number;
   }[];
-  current_price: number;
+  currentPrice: number;
 }
 
 interface ComparisonKLineChartProps {
@@ -76,7 +76,7 @@ export default function ComparisonKLineChart({ data, height = 400 }: ComparisonK
 
     // 为每只股票添加归一化价格线
     // 归一化：以第一天的收盘价为基准，计算相对变化百分比
-    const seriesMap: Record<string, any> = {};
+    const seriesMap: Record<string, { series: any; color: string; name: string }> = {};
 
     data.forEach((stock, index) => {
       if (!stock.kline || stock.kline.length === 0) return;

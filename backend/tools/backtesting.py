@@ -169,7 +169,7 @@ class BacktestEngine:
             delta = df['Close'].diff()
             gain = (delta.where(delta > 0, 0)).rolling(window=rsi_period).mean()
             loss = (-delta.where(delta < 0, 0)).rolling(window=rsi_period).mean()
-            rs = gain / loss
+            rs = gain / (loss + 1e-10)  # 防止除零
             df['RSI'] = 100 - (100 / (1 + rs))
 
             # 生成信号
@@ -424,14 +424,20 @@ def run_rsi_backtest(
     stock_code: str,
     start_date: str,
     end_date: str,
-    initial_capital: float = 1000000
+    initial_capital: float = 1000000,
+    rsi_period: int = 14,
+    oversold: float = 30,
+    overbought: float = 70
 ) -> dict:
     """RSI策略回测的便捷函数"""
     engine = BacktestEngine(initial_capital=initial_capital)
     result = engine.run_rsi_backtest(
         stock_code=stock_code,
         start_date=start_date,
-        end_date=end_date
+        end_date=end_date,
+        rsi_period=rsi_period,
+        oversold=oversold,
+        overbought=overbought
     )
     return _result_to_dict(result)
 

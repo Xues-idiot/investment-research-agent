@@ -3,22 +3,23 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { EquityCurveChart, DrawdownChart } from '@/components/charts';
+import { runBacktestMA, runBacktestRSI, runBacktestMomentum } from '@/lib/api';
 
 interface BacktestResult {
-  stock_code: string;
-  start_date: string;
-  end_date: string;
-  initial_capital: number;
-  final_value: number;
-  total_return: number;
-  total_return_pct: number;
-  num_trades: number;
-  num_buys: number;
-  num_sells: number;
-  win_rate: number;
-  max_drawdown: number;
-  max_drawdown_pct: number;
-  sharpe_ratio: number;
+  stockCode: string;
+  startDate: string;
+  endDate: string;
+  initialCapital: number;
+  finalValue: number;
+  totalReturn: number;
+  totalReturnPct: number;
+  numTrades: number;
+  numBuys: number;
+  numSells: number;
+  winRate: number;
+  maxDrawdown: number;
+  maxDrawdownPct: number;
+  sharpeRatio: number;
   trades: Array<{
     date: string;
     signal: string;
@@ -28,10 +29,10 @@ interface BacktestResult {
     commission: number;
     reason: string;
   }>;
-  daily_returns: Array<{
+  dailyReturns: Array<{
     date: string;
     value: number;
-    daily_return: number;
+    dailyReturn: number;
   }>;
 }
 
@@ -68,36 +69,36 @@ export default function BacktestPage() {
     setError(null);
 
     try {
-      let endpoint = '';
-      let body: any = {
+      const baseParams = {
         stock_code: stockCode,
         start_date: startDate,
         end_date: endDate,
         initial_capital: parseFloat(initialCapital),
       };
 
+      let data;
       if (strategyType === 'ma') {
-        endpoint = 'http://localhost:8001/api/backtest/ma';
-        body.short_window = parseInt(shortWindow);
-        body.long_window = parseInt(longWindow);
+        data = await runBacktestMA({
+          ...baseParams,
+          short_window: parseInt(shortWindow),
+          long_window: parseInt(longWindow),
+        });
       } else if (strategyType === 'rsi') {
-        endpoint = 'http://localhost:8001/api/backtest/rsi';
-        body.rsi_period = parseInt(rsiPeriod);
-        body.oversold = parseFloat(oversold);
-        body.overbought = parseFloat(overbought);
+        data = await runBacktestRSI({
+          ...baseParams,
+          rsi_period: parseInt(rsiPeriod),
+          oversold: parseInt(oversold),
+          overbought: parseInt(overbought),
+        });
       } else {
-        endpoint = 'http://localhost:8001/api/backtest/momentum';
-        body.lookback = parseInt(lookback);
-        body.threshold = parseFloat(momentumThreshold);
+        data = await runBacktestMomentum({
+          ...baseParams,
+          lookback: parseInt(lookback),
+          threshold: parseFloat(momentumThreshold),
+        });
       }
 
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      const data = await response.json();
-      if (data.success) {
+      if (data.success && data.data) {
         setResult(data.data);
       } else {
         setError(data.error || '回测失败');
@@ -301,68 +302,68 @@ export default function BacktestPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 <div className="bg-background-500 rounded-lg p-4">
                   <p className="text-gray-400 text-sm">总收益率</p>
-                  <p className={`text-xl font-bold ${result.total_return_pct >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {result.total_return_pct >= 0 ? '+' : ''}{result.total_return_pct.toFixed(2)}%
+                  <p className={`text-xl font-bold ${result.totalReturnPct >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {result.totalReturnPct >= 0 ? '+' : ''}{result.totalReturnPct.toFixed(2)}%
                   </p>
                 </div>
                 <div className="bg-background-500 rounded-lg p-4">
                   <p className="text-gray-400 text-sm">最终市值</p>
-                  <p className="text-white text-xl font-bold">¥{result.final_value.toLocaleString()}</p>
+                  <p className="text-white text-xl font-bold">¥{result.finalValue.toLocaleString()}</p>
                 </div>
                 <div className="bg-background-500 rounded-lg p-4">
                   <p className="text-gray-400 text-sm">总收益</p>
-                  <p className={`text-xl font-bold ${result.total_return >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {result.total_return >= 0 ? '+' : ''}¥{result.total_return.toLocaleString()}
+                  <p className={`text-xl font-bold ${result.totalReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {result.totalReturn >= 0 ? '+' : ''}¥{result.totalReturn.toLocaleString()}
                   </p>
                 </div>
                 <div className="bg-background-500 rounded-lg p-4">
                   <p className="text-gray-400 text-sm">夏普比率</p>
-                  <p className="text-white text-xl font-bold">{result.sharpe_ratio.toFixed(2)}</p>
+                  <p className="text-white text-xl font-bold">{result.sharpeRatio.toFixed(2)}</p>
                 </div>
                 <div className="bg-background-500 rounded-lg p-4">
                   <p className="text-gray-400 text-sm">最大回撤</p>
-                  <p className="text-red-400 text-xl font-bold">{result.max_drawdown_pct.toFixed(2)}%</p>
+                  <p className="text-red-400 text-xl font-bold">{result.maxDrawdownPct.toFixed(2)}%</p>
                 </div>
                 <div className="bg-background-500 rounded-lg p-4">
                   <p className="text-gray-400 text-sm">胜率</p>
-                  <p className="text-white text-xl font-bold">{result.win_rate.toFixed(1)}%</p>
+                  <p className="text-white text-xl font-bold">{result.winRate.toFixed(1)}%</p>
                 </div>
               </div>
 
               <div className="mt-4 flex gap-6 text-sm">
                 <span className="text-gray-400">
-                  股票: <span className="text-white">{result.stock_code}</span>
+                  股票: <span className="text-white">{result.stockCode}</span>
                 </span>
                 <span className="text-gray-400">
                   策略: <span className="text-white">{strategyLabels[strategyType]}</span>
                 </span>
                 <span className="text-gray-400">
-                  期间: <span className="text-white">{result.start_date} ~ {result.end_date}</span>
+                  期间: <span className="text-white">{result.startDate} ~ {result.endDate}</span>
                 </span>
                 <span className="text-gray-400">
-                  交易次数: <span className="text-white">{result.num_trades}</span> (买入{result.num_buys}/卖出{result.num_sells})
+                  交易次数: <span className="text-white">{result.numTrades}</span> (买入{result.numBuys}/卖出{result.numSells})
                 </span>
               </div>
             </div>
 
             {/* Equity Curve Chart */}
-            {result.daily_returns && result.daily_returns.length > 0 && (
+            {result.dailyReturns && result.dailyReturns.length > 0 && (
               <div className="bg-background-600 rounded-xl border border-background-400 p-6">
                 <h2 className="text-xl font-semibold text-white mb-4">权益曲线</h2>
                 <EquityCurveChart
-                  dailyReturns={result.daily_returns}
-                  initialCapital={result.initial_capital}
+                  dailyReturns={result.dailyReturns}
+                  initialCapital={result.initialCapital}
                   height={300}
                 />
               </div>
             )}
 
             {/* Drawdown Chart */}
-            {result.daily_returns && result.daily_returns.length > 0 && (
+            {result.dailyReturns && result.dailyReturns.length > 0 && (
               <div className="bg-background-600 rounded-xl border border-background-400 p-6">
                 <h2 className="text-xl font-semibold text-white mb-4">回撤分析</h2>
                 <DrawdownChart
-                  dailyReturns={result.daily_returns}
+                  dailyReturns={result.dailyReturns}
                   height={200}
                 />
               </div>

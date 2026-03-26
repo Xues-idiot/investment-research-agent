@@ -47,14 +47,22 @@ export function useFavorites() {
     });
   }, []);
 
-  // Toggle favorite
+  // Toggle favorite - 直接操作state避免闭包陷阱
   const toggleFavorite = useCallback((code: string, name: string) => {
-    if (favorites.some(f => f.code === code)) {
-      removeFavorite(code);
-    } else {
-      addFavorite(code, name);
-    }
-  }, [favorites, addFavorite, removeFavorite]);
+    setFavorites(prev => {
+      const exists = prev.some(f => f.code === code);
+      if (exists) {
+        const updated = prev.filter(f => f.code !== code);
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(updated));
+        return updated;
+      } else {
+        const item: FavoriteStock = { code, name, addedAt: new Date().toISOString() };
+        const updated = [item, ...prev];
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(updated));
+        return updated;
+      }
+    });
+  }, []);
 
   // Check if code is favorited
   const isFavorite = useCallback((code: string) => {

@@ -4,7 +4,7 @@
 
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn, getRiskColor } from '@/lib/utils';
+import { cn, getRiskColor, sanitizeHtml } from '@/lib/utils';
 
 interface ReportCardProps {
   report: {
@@ -301,7 +301,7 @@ ${report.finalReport}
         >
           <div
             className="prose prose-sm max-w-none text-gray-300"
-            dangerouslySetInnerHTML={{ __html: report.finalReport }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(report.finalReport) }}
           />
         </motion.div>
       </motion.div>

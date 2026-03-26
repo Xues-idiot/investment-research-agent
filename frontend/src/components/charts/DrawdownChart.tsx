@@ -7,7 +7,7 @@ interface DrawdownChartProps {
   dailyReturns: Array<{
     date: string;
     value: number;
-    daily_return: number;
+    dailyReturn: number;
   }>;
   height?: number;
 }
@@ -34,7 +34,7 @@ export default function DrawdownChart({ dailyReturns, height = 200 }: DrawdownCh
     drawdowns.push({ date: d.date, value: d.value, drawdown });
   });
 
-  const maxDrawdown = Math.max(...drawdowns.map(d => d.drawdown));
+  const maxDrawdown = drawdowns.reduce((max, d) => Math.max(max, d.drawdown), 0);
   const avgDrawdown = drawdowns.reduce((sum, d) => sum + d.drawdown, 0) / drawdowns.length;
 
   // 绘制回撤曲线

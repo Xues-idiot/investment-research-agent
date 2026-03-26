@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar';
 import BackToTop from '@/components/BackToTop';
 import Footer from '@/components/Footer';
 import VersionCheck from '@/components/VersionCheck';
+import ThemeProvider from '@/components/ThemeProvider';
 
 export const metadata: Metadata = {
   title: 'Rho 投研 Agent',
@@ -26,13 +27,15 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-background-500 font-sans antialiased">
-        <Navbar />
-        <main className="pt-16">
-          {children}
-        </main>
-        <Footer />
-        <BackToTop />
-        <VersionCheck />
+        <ThemeProvider>
+          <Navbar />
+          <main className="pt-16">
+            {children}
+          </main>
+          <Footer />
+          <BackToTop />
+          <VersionCheck />
+        </ThemeProvider>
       </body>
     </html>
   );

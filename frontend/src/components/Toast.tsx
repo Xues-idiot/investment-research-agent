@@ -88,9 +88,10 @@ export default function Toast({ toasts, onRemove }: ToastProps) {
   );
 }
 
-// Toast Hook
-const toastListeners: Array<(toast: ToastMessage) => void> = [];
+// Toast Hook - 使用Map存储监听器，支持清理
+const toastListeners = new Map<string, (toast: ToastMessage) => void>();
 let soundEnabled = false;
+let listenerIdCounter = 0;
 
 export function toast(options: Omit<ToastMessage, 'id'>) {
   const id = Math.random().toString(36).substr(2, 9);
@@ -125,10 +126,10 @@ export function useToast() {
   }, []);
 
   useEffect(() => {
-    toastListeners.push(addToast);
+    const listenerId = `listener_${++listenerIdCounter}`;
+    toastListeners.set(listenerId, addToast);
     return () => {
-      const index = toastListeners.indexOf(addToast);
-      if (index > -1) toastListeners.splice(index, 1);
+      toastListeners.delete(listenerId);
     };
   }, [addToast]);
 

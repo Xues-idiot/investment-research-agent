@@ -3,37 +3,38 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { AllocationChart } from '@/components/charts';
+import { suggestPortfolio, analyzePortfolioRisk } from '@/lib/api';
 
 interface Holding {
-  stock_code: string;
-  stock_name: string;
+  stockCode: string;
+  stockName: string;
   weight: number;
   shares: number;
-  entry_price: number;
+  entryPrice: number;
   allocation: number;
-  allocation_pct: number;
+  allocationPct: number;
 }
 
 interface PortfolioSuggestion {
-  total_capital: number;
-  total_invested: number;
-  cash_reserve: number;
-  cash_reserve_pct: number;
+  totalCapital: number;
+  totalInvested: number;
+  cashReserve: number;
+  cashReservePct: number;
   holdings: Holding[];
-  num_positions: number;
+  numPositions: number;
   strategy: string;
-  risk_level: string;
+  riskLevel: string;
   timestamp: string;
 }
 
 interface RiskAnalysis {
-  risk_score: number;
-  risk_level: string;
-  concentration_risk: string;
-  diversification_score: number;
-  correlation_risk: string;
-  max_weight: number;
-  num_positions: number;
+  riskScore: number;
+  riskLevel: string;
+  concentrationRisk: string;
+  diversificationScore: number;
+  correlationRisk: string;
+  maxWeight: number;
+  numPositions: number;
   suggestions: string[];
 }
 
@@ -58,18 +59,13 @@ export default function PortfolioPage() {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:8001/api/portfolio/suggest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          stock_codes: codes,
-          total_capital: parseFloat(totalCapital),
-          risk_level: riskLevel,
-          strategy: strategy,
-        }),
+      const data = await suggestPortfolio({
+        stock_codes: codes,
+        total_capital: parseFloat(totalCapital),
+        risk_level: riskLevel,
+        strategy: strategy,
       });
-      const data = await response.json();
-      if (data.success) {
+      if (data.success && data.data) {
         setSuggestion(data.data);
         // Auto analyze risk
         handleAnalyzeRisk(data.data);
@@ -83,20 +79,13 @@ export default function PortfolioPage() {
     }
   };
 
-  const handleAnalyzeRisk = async (portfolioData?: any) => {
+  const handleAnalyzeRisk = async (portfolioData?: PortfolioSuggestion) => {
     const dataToAnalyze = portfolioData || suggestion;
     if (!dataToAnalyze) return;
 
     try {
-      const response = await fetch('http://localhost:8001/api/portfolio/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          portfolio: dataToAnalyze,
-        }),
-      });
-      const data = await response.json();
-      if (data.success) {
+      const data = await analyzePortfolioRisk(dataToAnalyze);
+      if (data.success && data.data) {
         setRiskAnalysis(data.data);
       }
     } catch (err) {
@@ -214,24 +203,24 @@ export default function PortfolioPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="bg-background-500 rounded-lg p-4">
                   <p className="text-gray-400 text-sm">总资金</p>
-                  <p className="text-white text-xl font-bold">¥{parseFloat(suggestion.total_capital as any).toLocaleString()}</p>
+                  <p className="text-white text-xl font-bold">¥{parseFloat(suggestion.totalCapital as any).toLocaleString()}</p>
                 </div>
                 <div className="bg-background-500 rounded-lg p-4">
                   <p className="text-gray-400 text-sm">配置市值</p>
-                  <p className="text-primary-400 text-xl font-bold">¥{parseFloat(suggestion.total_invested as any).toLocaleString()}</p>
+                  <p className="text-primary-400 text-xl font-bold">¥{parseFloat(suggestion.totalInvested as any).toLocaleString()}</p>
                 </div>
                 <div className="bg-background-500 rounded-lg p-4">
                   <p className="text-gray-400 text-sm">现金保留</p>
-                  <p className="text-green-400 text-xl font-bold">¥{parseFloat(suggestion.cash_reserve as any).toLocaleString()}</p>
+                  <p className="text-green-400 text-xl font-bold">¥{parseFloat(suggestion.cashReserve as any).toLocaleString()}</p>
                 </div>
                 <div className="bg-background-500 rounded-lg p-4">
                   <p className="text-gray-400 text-sm">持仓数量</p>
-                  <p className="text-white text-xl font-bold">{suggestion.num_positions} 只</p>
+                  <p className="text-white text-xl font-bold">{suggestion.numPositions} 只</p>
                 </div>
               </div>
               <div className="flex gap-4 text-sm">
                 <span className="text-gray-400">
-                  风险偏好: <span className="text-white">{riskLevelLabels[suggestion.risk_level]}</span>
+                  风险偏好: <span className="text-white">{riskLevelLabels[suggestion.riskLevel]}</span>
                 </span>
                 <span className="text-gray-400">
                   策略: <span className="text-white">{strategyLabels[suggestion.strategy]}</span>
@@ -244,7 +233,7 @@ export default function PortfolioPage() {
               <h2 className="text-xl font-semibold text-white mb-4">配置分布</h2>
               <AllocationChart
                 holdings={suggestion.holdings}
-                cashReservePct={suggestion.cash_reserve_pct}
+                cashReservePct={suggestion.cashReservePct}
                 height={280}
               />
             </div>
@@ -265,13 +254,13 @@ export default function PortfolioPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {suggestion.holdings.map((holding, index) => (
-                      <tr key={index} className="border-b border-background-500">
-                        <td className="py-3 px-4 text-white text-sm">{holding.stock_code}</td>
-                        <td className="py-3 px-4 text-white text-sm">{holding.stock_name}</td>
+                    {suggestion.holdings.map((holding) => (
+                      <tr key={holding.stockCode} className="border-b border-background-500">
+                        <td className="py-3 px-4 text-white text-sm">{holding.stockCode}</td>
+                        <td className="py-3 px-4 text-white text-sm">{holding.stockName}</td>
                         <td className="py-3 px-4 text-primary-400 text-sm text-right">{(holding.weight * 100).toFixed(1)}%</td>
                         <td className="py-3 px-4 text-white text-sm text-right">{holding.shares}</td>
-                        <td className="py-3 px-4 text-white text-sm text-right">¥{holding.entry_price.toFixed(2)}</td>
+                        <td className="py-3 px-4 text-white text-sm text-right">¥{holding.entryPrice.toFixed(2)}</td>
                         <td className="py-3 px-4 text-white text-sm text-right">¥{holding.allocation.toLocaleString()}</td>
                       </tr>
                     ))}
@@ -288,27 +277,27 @@ export default function PortfolioPage() {
                   <div className="bg-background-500 rounded-lg p-4">
                     <p className="text-gray-400 text-sm">风险评分</p>
                     <p className={`text-xl font-bold ${
-                      riskAnalysis.risk_level === '高' ? 'text-red-400' :
-                      riskAnalysis.risk_level === '中' ? 'text-yellow-400' : 'text-green-400'
-                    }`}>{riskAnalysis.risk_score} ({riskAnalysis.risk_level})</p>
+                      riskAnalysis.riskLevel === '高' ? 'text-red-400' :
+                      riskAnalysis.riskLevel === '中' ? 'text-yellow-400' : 'text-green-400'
+                    }`}>{riskAnalysis.riskScore} ({riskAnalysis.riskLevel})</p>
                   </div>
                   <div className="bg-background-500 rounded-lg p-4">
                     <p className="text-gray-400 text-sm">集中度风险</p>
                     <p className={`text-xl font-bold ${
-                      riskAnalysis.concentration_risk === '高' ? 'text-red-400' :
-                      riskAnalysis.concentration_risk === '中' ? 'text-yellow-400' : 'text-green-400'
-                    }`}>{riskAnalysis.concentration_risk}</p>
+                      riskAnalysis.concentrationRisk === '高' ? 'text-red-400' :
+                      riskAnalysis.concentrationRisk === '中' ? 'text-yellow-400' : 'text-green-400'
+                    }`}>{riskAnalysis.concentrationRisk}</p>
                   </div>
                   <div className="bg-background-500 rounded-lg p-4">
                     <p className="text-gray-400 text-sm">分散度评分</p>
-                    <p className="text-xl font-bold text-white">{riskAnalysis.diversification_score}/10</p>
+                    <p className="text-xl font-bold text-white">{riskAnalysis.diversificationScore}/10</p>
                   </div>
                   <div className="bg-background-500 rounded-lg p-4">
                     <p className="text-gray-400 text-sm">相关性风险</p>
                     <p className={`text-xl font-bold ${
-                      riskAnalysis.correlation_risk === '高' ? 'text-red-400' :
-                      riskAnalysis.correlation_risk === '中' ? 'text-yellow-400' : 'text-green-400'
-                    }`}>{riskAnalysis.correlation_risk}</p>
+                      riskAnalysis.correlationRisk === '高' ? 'text-red-400' :
+                      riskAnalysis.correlationRisk === '中' ? 'text-yellow-400' : 'text-green-400'
+                    }`}>{riskAnalysis.correlationRisk}</p>
                   </div>
                 </div>
                 <div>

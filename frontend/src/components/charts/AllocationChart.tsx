@@ -5,8 +5,8 @@
 
 interface AllocationChartProps {
   holdings: Array<{
-    stock_code: string;
-    stock_name: string;
+    stockCode: string;
+    stockName: string;
     weight: number;
   }>;
   cashReservePct?: number;
@@ -94,7 +94,7 @@ export default function AllocationChart({ holdings, cashReservePct = 0, height =
       'Z',
     ].join(' ');
 
-    paths.push({ d, color: '#6B7280', holding: { stock_code: '', stock_name: '现金', weight: cashReservePct }, percentage: (cashReservePct * 100).toFixed(1) });
+    paths.push({ d, color: '#6B7280', holding: { stockCode: '', stockName: '现金', weight: cashReservePct }, percentage: (cashReservePct * 100).toFixed(1) });
   }
 
   return (
@@ -103,7 +103,7 @@ export default function AllocationChart({ holdings, cashReservePct = 0, height =
         <svg viewBox={`0 0 ${size} ${size}`} style={{ width: size, height: size }}>
           {paths.map((path, index) => (
             <path
-              key={index}
+              key={path.holding.stockCode || `path-${index}`}
               d={path.d}
               fill={path.color}
               className="transition-all hover:opacity-80 cursor-pointer"
@@ -134,13 +134,13 @@ export default function AllocationChart({ holdings, cashReservePct = 0, height =
         {/* Legend */}
         <div className="flex flex-col gap-2 pr-4">
           {paths.map((path, index) => (
-            <div key={index} className="flex items-center gap-2">
+            <div key={path.holding.stockCode || `cash-${index}`} className="flex items-center gap-2">
               <span
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: path.color }}
               />
               <span className="text-white text-sm">
-                {path.holding.stock_name || path.holding.stock_code}
+                {path.holding.stockName || path.holding.stockCode}
               </span>
               <span className="text-gray-400 text-sm">
                 {path.percentage}%

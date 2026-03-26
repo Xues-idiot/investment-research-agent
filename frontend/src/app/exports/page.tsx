@@ -1,7 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { exportPdf, exportHtml } from '@/lib/api';
+import { exportToCSV, exportToJSON, researchToTableData, downloadFile } from '@/lib/utils';
+
+const HISTORY_KEY = 'rho_research_history';
+
+interface ResearchResult {
+  stockCode: string;
+  companyName: string;
+  finalReport: string;
+  confidence: number;
+  riskAssessment: {
+    level: string;
+    score: number;
+    factors: string[];
+  };
+  reports: {
+    fundamentals: string;
+    sentiment: string;
+    news: string;
+    technical: string;
+    synthesis: string;
+  };
+}
 
 export default function ExportsPage() {
   const [stockCode, setStockCode] = useState('');
@@ -13,6 +36,38 @@ export default function ExportsPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState('blank');
+  const [latestResearch, setLatestResearch] = useState<ResearchResult | null>(null);
+  const [exportMode, setExportMode] = useState<'report' | 'data'>('report');
+  const [historyForExport, setHistoryForExport] = useState<ResearchResult[]>([]);
+
+  // 从 localStorage 加载最新的研究报告
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(HISTORY_KEY);
+      if (stored) {
+        const history = JSON.parse(stored);
+        if (history && history.length > 0) {
+          setLatestResearch(history[0]);
+          setHistoryForExport(history);
+          // 如果有最新研究，自动填充股票代码
+          setStockCode(history[0].stockCode);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load research history:', e);
+    }
+  }, []);
+
+  // 填充模板变量的函数
+  const fillTemplate = (templateContent: string, data: ResearchResult | null): string => {
+    if (!data) return templateContent;
+
+    return templateContent
+      .replace(/\{\{stockCode\}\}/g, `${data.stockCode} ${data.companyName}`)
+      .replace(/\{\{confidence\}\}/g, `${(data.confidence * 100).toFixed(0)}%`)
+      .replace(/\{\{riskLevel\}\}/g, `${data.riskAssessment.level} (${data.riskAssessment.score}/100)`)
+      .replace(/\{\{summary\}\}/g, data.finalReport.slice(0, 500) + (data.finalReport.length > 500 ? '...' : ''));
+  };
 
   const sampleReport = `# 贵州茅台（600519）投资研究报告
 
@@ -63,6 +118,30 @@ export default function ExportsPage() {
   };
 
   const handleExport = async () => {
+    // 数据导出模式
+    if (exportMode === 'data') {
+      if (historyForExport.length === 0) {
+        setError('没有可导出的研究数据');
+        return;
+      }
+      setLoading(true);
+      try {
+        const tableData = researchToTableData(historyForExport);
+        if (exportFormat === 'csv') {
+          exportToCSV(tableData, `research_data_${Date.now()}`);
+        } else if (exportFormat === 'json') {
+          exportToJSON(historyForExport, `research_data_${Date.now()}`);
+        }
+        setSuccess(`${exportFormat.toUpperCase()} 数据导出成功！`);
+      } catch (err) {
+        setError('导出失败');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // 报告导出模式
     if (!markdownContent) {
       setError('请输入报告内容');
       return;
@@ -74,31 +153,22 @@ export default function ExportsPage() {
     setDownloadUrl(null);
 
     try {
-      const endpoint = exportFormat === 'pdf'
-        ? 'http://localhost:8001/api/export/pdf'
-        : 'http://localhost:8001/api/export/html';
+      const baseParams = {
+        stock_code: stockCode || 'report',
+        markdown_content: markdownContent,
+        title: title || `${stockCode || 'Report'} 投资研究报告`,
+        author: 'Rho Agent',
+      };
 
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          stock_code: stockCode || 'report',
-          markdown_content: markdownContent,
-          title: title || `${stockCode || 'Report'} 投资研究报告`,
-          author: 'Rho Agent',
-        }),
-      });
+      const data = exportFormat === 'pdf'
+        ? await exportPdf(baseParams)
+        : await exportHtml(baseParams);
 
-      const data = await response.json();
-      if (data.success) {
+      if (data.success && data.data) {
         setSuccess(`${exportFormat.toUpperCase()} 导出成功！`);
-        setDownloadUrl(data.data.download_url);
+        setDownloadUrl(data.data.download_url || null);
       } else {
         setError(data.error || '导出失败');
-        // Suggest alternative if PDF not available
-        if (exportFormat === 'pdf' && data.available_formats) {
-          setError(`${data.error}，可使用 ${data.available_formats.join(', ')} 格式`);
-        }
       }
     } catch (err) {
       setError('网络错误');
@@ -117,7 +187,7 @@ export default function ExportsPage() {
           className="mb-8"
         >
           <h1 className="text-3xl font-bold text-white mb-2">📤 报告导出</h1>
-          <p className="text-gray-400">导出PDF、HTML格式投资报告，分享研究结果</p>
+          <p className="text-gray-400">导出PDF、HTML、CSV、JSON格式投资报告和数据</p>
         </motion.div>
 
         {/* Export Form */}
@@ -128,68 +198,117 @@ export default function ExportsPage() {
         >
           <h2 className="text-xl font-semibold text-white mb-4">导出报告</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            {/* Export Mode Toggle */}
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">股票代码</label>
-              <input
-                type="text"
-                value={stockCode}
-                onChange={(e) => setStockCode(e.target.value)}
-                placeholder="600519"
-                className="w-full px-4 py-3 bg-background-500 border border-background-400 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
-              />
+              <label className="block text-gray-300 text-sm font-medium mb-2">导出模式</label>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setExportMode('report')}
+                  className={`flex-1 px-3 py-3 rounded-lg text-sm transition-colors ${
+                    exportMode === 'report'
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-background-500 text-gray-400 hover:text-white'
+                  }`}
+                >
+                  📄 报告
+                </button>
+                <button
+                  onClick={() => setExportMode('data')}
+                  className={`flex-1 px-3 py-3 rounded-lg text-sm transition-colors ${
+                    exportMode === 'data'
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-background-500 text-gray-400 hover:text-white'
+                  }`}
+                >
+                  📊 数据
+                </button>
+              </div>
             </div>
-            <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">报告标题</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="投资研究报告"
-                className="w-full px-4 py-3 bg-background-500 border border-background-400 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">导出格式</label>
-              <select
-                value={exportFormat}
-                onChange={(e) => setExportFormat(e.target.value)}
-                className="w-full px-4 py-3 bg-background-500 border border-background-400 rounded-lg text-white focus:outline-none focus:border-primary-500"
-              >
-                <option value="html">HTML</option>
-                <option value="pdf">PDF</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">模板</label>
-              <select
-                value={selectedTemplate}
-                onChange={(e) => {
-                  setSelectedTemplate(e.target.value);
-                  if (e.target.value !== 'blank') {
-                    setMarkdownContent(templates[e.target.value as keyof typeof templates].content);
-                  }
-                }}
-                className="w-full px-4 py-3 bg-background-500 border border-background-400 rounded-lg text-white focus:outline-none focus:border-primary-500"
-              >
-                <option value="blank">空白模板</option>
-                <option value="standard">标准投研报告</option>
-                <option value="brief">简报模板</option>
-              </select>
-            </div>
+
+            {exportMode === 'report' ? (
+              <>
+                <div>
+                  <label className="block text-gray-300 text-sm font-medium mb-2">股票代码</label>
+                  <input
+                    type="text"
+                    value={stockCode}
+                    onChange={(e) => setStockCode(e.target.value)}
+                    placeholder="600519"
+                    className="w-full px-4 py-3 bg-background-500 border border-background-400 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-300 text-sm font-medium mb-2">导出格式</label>
+                  <select
+                    value={exportFormat}
+                    onChange={(e) => setExportFormat(e.target.value)}
+                    className="w-full px-4 py-3 bg-background-500 border border-background-400 rounded-lg text-white focus:outline-none focus:border-primary-500"
+                  >
+                    <option value="html">HTML</option>
+                    <option value="pdf">PDF</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-gray-300 text-sm font-medium mb-2">模板</label>
+                  <select
+                    value={selectedTemplate}
+                    onChange={(e) => {
+                      setSelectedTemplate(e.target.value);
+                      if (e.target.value !== 'blank') {
+                        const templateContent = templates[e.target.value as keyof typeof templates].content;
+                        const filledContent = fillTemplate(templateContent, latestResearch);
+                        setMarkdownContent(filledContent);
+                      }
+                    }}
+                    className="w-full px-4 py-3 bg-background-500 border border-background-400 rounded-lg text-white focus:outline-none focus:border-primary-500"
+                  >
+                    <option value="blank">空白模板</option>
+                    <option value="standard">标准投研报告</option>
+                    <option value="brief">简报模板</option>
+                  </select>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="md:col-span-2">
+                  <label className="block text-gray-300 text-sm font-medium mb-2">数据格式</label>
+                  <select
+                    value={exportFormat}
+                    onChange={(e) => setExportFormat(e.target.value)}
+                    className="w-full px-4 py-3 bg-background-500 border border-background-400 rounded-lg text-white focus:outline-none focus:border-primary-500"
+                  >
+                    <option value="csv">CSV (Excel兼容)</option>
+                    <option value="json">JSON (结构化数据)</option>
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-gray-300 text-sm font-medium mb-2">可用数据</label>
+                  <div className="px-4 py-3 bg-background-500 border border-background-400 rounded-lg text-gray-300">
+                    {historyForExport.length > 0 ? (
+                      <span>共 {historyForExport.length} 条研究记录</span>
+                    ) : (
+                      <span className="text-gray-500">暂无研究数据</span>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          <div className="mb-4">
-            <label className="block text-gray-300 text-sm font-medium mb-2">
-              Markdown 内容
-            </label>
-            <textarea
-              value={markdownContent}
-              onChange={(e) => setMarkdownContent(e.target.value)}
-              placeholder="输入报告的Markdown内容..."
-              rows={12}
-              className="w-full px-4 py-3 bg-background-500 border border-background-400 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 font-mono text-sm resize-y"
-            />
-          </div>
+          {exportMode === 'report' && (
+            <div className="mb-4">
+              <label className="block text-gray-300 text-sm font-medium mb-2">
+                Markdown 内容
+              </label>
+              <textarea
+                value={markdownContent}
+                onChange={(e) => setMarkdownContent(e.target.value)}
+                placeholder="输入报告的Markdown内容..."
+                rows={12}
+                className="w-full px-4 py-3 bg-background-500 border border-background-400 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 font-mono text-sm resize-y"
+              />
+            </div>
+          )}
 
           <div className="flex gap-4">
             <button
@@ -197,14 +316,16 @@ export default function ExportsPage() {
               disabled={loading}
               className="px-6 py-3 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 disabled:opacity-50 transition-colors"
             >
-              {loading ? '导出中...' : '导出报告'}
+              {loading ? '导出中...' : exportMode === 'report' ? '导出报告' : '导出数据'}
             </button>
-            <button
-              onClick={() => setMarkdownContent(sampleReport)}
-              className="px-6 py-3 bg-background-500 text-gray-300 rounded-lg font-medium hover:bg-background-400 transition-colors"
-            >
-              填充示例
-            </button>
+            {exportMode === 'report' && (
+              <button
+                onClick={() => setMarkdownContent(sampleReport)}
+                className="px-6 py-3 bg-background-500 text-gray-300 rounded-lg font-medium hover:bg-background-400 transition-colors"
+              >
+                填充示例
+              </button>
+            )}
           </div>
 
           {error && (

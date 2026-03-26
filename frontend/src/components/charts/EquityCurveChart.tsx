@@ -6,7 +6,7 @@ interface EquityCurveChartProps {
   dailyReturns: Array<{
     date: string;
     value: number;
-    daily_return: number;
+    dailyReturn: number;
   }>;
   initialCapital: number;
   height?: number;
@@ -24,8 +24,9 @@ export default function EquityCurveChart({
 
     const w = 700;
     const values = dailyReturns.map((d) => d.value);
-    const min = Math.min(...values);
-    const max = Math.max(...values);
+    // 使用reduce代替spread避免大数据量栈溢出
+    const min = values.reduce((a, b) => Math.min(a, b), values[0]);
+    const max = values.reduce((a, b) => Math.max(a, b), values[0]);
     const range = max - min || 1;
     const padding = range * 0.1;
 

@@ -22,8 +22,9 @@ export default function ComparisonBarChart({
       return { maxValue: 1, minValue: 0, bars: [] };
     }
 
-    const max = Math.max(...values);
-    const min = Math.min(...values);
+    // 使用 reduce 代替 spread 操作符，防止大数据量时栈溢出
+    const max = values.reduce((a, b) => Math.max(a, b), values[0]);
+    const min = values.reduce((a, b) => Math.min(a, b), values[0]);
     const range = max - min || 1;
 
     const barsData = values.map((value, index) => {

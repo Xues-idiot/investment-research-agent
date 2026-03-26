@@ -21,7 +21,7 @@ const agents = [
 ];
 
 export default function AgentStatus({ currentAgent }: AgentStatusProps) {
-  const currentIndex = agents.findIndex(a => a.name.includes(currentAgent)) || 0;
+  const currentIndex = agents.findIndex(a => a.name.includes(currentAgent)) ?? 0;
 
   return (
     <div className="bg-background-600 rounded-xl p-6 border border-background-400">

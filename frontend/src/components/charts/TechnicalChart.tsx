@@ -270,10 +270,13 @@ export default function TechnicalChart({ data, symbol = 'Stock', height = 300 }:
         </div>
         <div className="bg-background-500 rounded p-2">
           <div className="text-xs text-gray-400">RSI</div>
-          <div className={`text-sm font-medium ${(() => {
-            const rsi = data[data.length-1]?.rsi ?? 50;
-            return rsi > 70 ? 'text-red-400' : rsi < 30 ? 'text-green-400' : 'text-white';
-          })()}`}>
+          <div className={`text-sm font-medium ${
+            (() => {
+              const rsi = data[data.length-1]?.rsi;
+              if (rsi === undefined) return 'text-white';
+              return rsi > 70 ? 'text-red-400' : rsi < 30 ? 'text-green-400' : 'text-white';
+            })()
+          }`}>
             {data[data.length-1]?.rsi?.toFixed(1) ?? '-'}
           </div>
         </div>
