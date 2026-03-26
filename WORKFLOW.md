@@ -784,4 +784,42 @@ P3 (锦上添花)
 
 ---
 
+## 十一、迭代记录
+
+### 第51-100轮 (2026-03-26)
+
+| 轮次 | Phase A | Phase E | 结果 |
+|------|---------|---------|------|
+| 1-50 | ✅ | - | Build通过 |
+| 51 | ✅ | - | Build通过 |
+| 55 | ✅ | ✅ | 识别14个死组件 |
+| 60 | ✅ | - | Build通过 |
+| 65 | ✅ | - | Build通过 |
+| 70 | ✅ | - | Build通过 |
+| 75 | ✅ | ✅ | 识别1个死Hook |
+| 80 | ✅ | - | Build通过 |
+| 85 | ✅ | - | Build通过 |
+| 90 | ✅ | - | Build通过 |
+| 95 | ✅ | - | Build通过 |
+| 100 | ✅ | ✅ | 清理15个死文件 |
+
+**Phase E 审查结果:**
+- 移除15个未使用组件/Hook
+- 项目文件数: 122+ → 107
+- Build通过，无新增错误
+
+**已移除的死代码:**
+- StockDetailModal, KeyboardShortcutsModal
+- ResearchQueueManager, StrategyPresetModal
+- IndustryComparison, ValuationCalculator
+- ShareResearchModal, IndicatorConfigPanel
+- AutoRefreshToggle, ResearchSummaryPreview
+- BatchExportPanel, ChartFullscreenMode
+- PerformanceMonitor, DevQuickActions
+- useRecentSearches
+
+**Git提交:** `4d6cf0b` - feat(100轮迭代): 持续迭代循环完成
+
+---
+
 *工作流文档 | Rho | 2026-03-26 | 添加持续迭代循环*
