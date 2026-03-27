@@ -822,4 +822,27 @@ P3 (锦上添花)
 
 ---
 
+### 第101-200轮 (2026-03-27)
+
+| 轮次 | Phase A | Phase E | 结果 |
+|------|---------|---------|------|
+| 101-170 | ✅ | - | Build通过 |
+| 175 | ✅ | ✅ | 识别4个死Hook |
+| 171-200 | ✅ | - | Build通过 |
+
+**Phase E 审查结果:**
+- 移除4个未使用Hook:
+  - useStockDetailModal.ts
+  - useKeyboardShortcutsHelp.ts
+  - useBacktestStrategy.ts
+  - useAutoRefresh.ts
+
+**累计清理 (1-200轮):**
+- 19个死文件移除
+- 项目文件数: 122+ → 103
+
+**Git提交:** `f663bbd` - feat(101-200轮迭代): Phase E清理4个死Hook
+
+---
+
 *工作流文档 | Rho | 2026-03-26 | 添加持续迭代循环*
