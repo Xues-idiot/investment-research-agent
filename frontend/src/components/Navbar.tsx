@@ -14,6 +14,7 @@ const navItems = [
   { href: '/portfolio', label: '组合', icon: '💼' },
   { href: '/backtest', label: '回测', icon: '🔬' },
   { href: '/exports', label: '导出', icon: '📤' },
+  { href: '/favorites', label: '收藏', icon: '⭐' },
 ];
 
 export default function Navbar() {

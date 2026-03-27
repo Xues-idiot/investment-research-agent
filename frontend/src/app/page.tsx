@@ -56,6 +56,13 @@ const features = [
     description: '导出PDF、HTML格式投资报告，分享研究结果',
     color: 'from-indigo-500 to-blue-500',
   },
+  {
+    href: '/favorites',
+    icon: '⭐',
+    title: '我的收藏',
+    description: '管理关注的股票，快速访问研究页面',
+    color: 'from-yellow-500 to-orange-500',
+  },
 ];
 
 export default function HomePage() {
