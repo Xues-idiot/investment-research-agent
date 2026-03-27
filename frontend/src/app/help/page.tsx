@@ -52,6 +52,12 @@ const features = [
     description: '收藏关注的股票，快速访问和管理',
     link: '/favorites',
   },
+  {
+    icon: '📝',
+    title: '更新日志',
+    description: '查看最新版本更新和新功能',
+    link: '/changelog',
+  },
 ];
 
 const faqs = [

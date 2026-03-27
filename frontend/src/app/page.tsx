@@ -70,6 +70,13 @@ const features = [
     description: '快捷键、功能介绍、常见问题',
     color: 'from-gray-500 to-slate-500',
   },
+  {
+    href: '/changelog',
+    icon: '📝',
+    title: '更新日志',
+    description: '版本更新记录，新功能一览',
+    color: 'from-cyan-500 to-blue-500',
+  },
 ];
 
 export default function HomePage() {
