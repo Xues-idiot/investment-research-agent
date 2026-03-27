@@ -15,6 +15,7 @@ const navItems = [
   { href: '/backtest', label: '回测', icon: '🔬' },
   { href: '/exports', label: '导出', icon: '📤' },
   { href: '/favorites', label: '收藏', icon: '⭐' },
+  { href: '/help', label: '帮助', icon: '❓' },
 ];
 
 export default function Navbar() {

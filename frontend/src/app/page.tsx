@@ -63,6 +63,13 @@ const features = [
     description: '管理关注的股票，快速访问研究页面',
     color: 'from-yellow-500 to-orange-500',
   },
+  {
+    href: '/help',
+    icon: '❓',
+    title: '使用帮助',
+    description: '快捷键、功能介绍、常见问题',
+    color: 'from-gray-500 to-slate-500',
+  },
 ];
 
 export default function HomePage() {
