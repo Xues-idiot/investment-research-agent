@@ -7,10 +7,12 @@ import { VERSION } from '@/types';
 
 const HISTORY_KEY = 'rho_research_history';
 const ALERTS_KEY = 'rho_monitor_alerts';
+const FAVORITES_KEY = 'rho_favorites';
 
 interface QuickStats {
   researchCount: number;
   alertsCount: number;
+  favoritesCount: number;
 }
 
 const features = [
@@ -80,15 +82,17 @@ const features = [
 ];
 
 export default function HomePage() {
-  const [stats, setStats] = useState<QuickStats>({ researchCount: 0, alertsCount: 0 });
+  const [stats, setStats] = useState<QuickStats>({ researchCount: 0, alertsCount: 0, favoritesCount: 0 });
 
   useEffect(() => {
     try {
       const history = localStorage.getItem(HISTORY_KEY);
       const alerts = localStorage.getItem(ALERTS_KEY);
+      const favorites = localStorage.getItem(FAVORITES_KEY);
       setStats({
         researchCount: history ? JSON.parse(history).length : 0,
         alertsCount: alerts ? JSON.parse(alerts).length : 0,
+        favoritesCount: favorites ? JSON.parse(favorites).length : 0,
       });
     } catch (e) {
       console.error('Failed to load stats:', e);
@@ -140,8 +144,8 @@ export default function HomePage() {
             transition={{ delay: 0.2 }}
             className="bg-background-600 rounded-xl border border-background-400 p-4 text-center"
           >
-            <div className="text-3xl font-bold text-purple-400">6</div>
-            <div className="text-gray-400 text-sm">功能模块</div>
+            <div className="text-3xl font-bold text-yellow-400">{stats.favoritesCount}</div>
+            <div className="text-gray-400 text-sm">我的收藏</div>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
