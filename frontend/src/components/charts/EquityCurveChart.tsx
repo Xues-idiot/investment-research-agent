@@ -49,8 +49,11 @@ export default function EquityCurveChart({
 
   if (!dailyReturns || dailyReturns.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 bg-background-500 rounded-lg">
-        <p className="text-gray-500">暂无数据</p>
+      <div className="flex items-center justify-center bg-terminal-700 rounded-xl p-6 border border-border-subtle" style={{ height }}>
+        <div className="text-center">
+          <div className="text-4xl mb-2">📈</div>
+          <p className="text-content-muted text-sm">暂无数据</p>
+        </div>
       </div>
     );
   }
@@ -70,21 +73,21 @@ export default function EquityCurveChart({
   const isProfit = totalReturn >= 0;
 
   return (
-    <div className="bg-background-500 rounded-lg p-4">
+    <div className="bg-terminal-700 rounded-xl p-4 border border-border-subtle">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-gray-400 text-sm">最终市值</p>
-          <p className="text-white text-xl font-bold">{formatValue(endValue)}</p>
+          <p className="text-content-muted text-sm">最终市值</p>
+          <p className="text-content-primary text-xl font-display font-bold">{formatValue(endValue)}</p>
         </div>
         <div className="text-right">
-          <p className="text-gray-400 text-sm">总收益率</p>
-          <p className={`text-xl font-bold ${isProfit ? 'text-green-400' : 'text-red-400'}`}>
+          <p className="text-content-muted text-sm">总收益率</p>
+          <p className={`text-xl font-display font-bold tabular-nums ${isProfit ? 'text-gain' : 'text-loss'}`}>
             {isProfit ? '+' : ''}{formatPercent(endValue)}
           </p>
         </div>
         <div className="text-right">
-          <p className="text-gray-400 text-sm">初始/最高/最低</p>
-          <p className="text-gray-300 text-sm">
+          <p className="text-content-muted text-sm">初始/最高/最低</p>
+          <p className="text-content-secondary text-sm font-mono tabular-nums">
             {formatValue(startValue)} / {formatValue(maxValue)} / {formatValue(minValue)}
           </p>
         </div>

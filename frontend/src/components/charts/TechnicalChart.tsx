@@ -25,7 +25,6 @@ interface TechnicalChartProps {
   height?: number;
 }
 
-// 可折叠指标面板组件
 function CollapsibleIndicator({
   title,
   icon,
@@ -40,16 +39,16 @@ function CollapsibleIndicator({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="border border-background-400 rounded-lg overflow-hidden">
+    <div className="border border-border-subtle rounded-xl overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-2 bg-background-500 hover:bg-background-400 flex items-center justify-between transition-colors"
+        className="w-full px-4 py-2.5 bg-terminal-600 hover:bg-terminal-500 flex items-center justify-between transition-colors"
       >
-        <span className="text-sm text-gray-300 flex items-center gap-2">
+        <span className="text-sm text-content-secondary flex items-center gap-2">
           {icon} {title}
         </span>
         <motion.svg
-          className="w-4 h-4 text-gray-400"
+          className="w-4 h-4 text-content-muted"
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
           fill="none"
@@ -68,7 +67,7 @@ function CollapsibleIndicator({
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="p-3">{children}</div>
+            <div className="p-3 bg-terminal-700">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -90,20 +89,19 @@ export default function TechnicalChart({ data, symbol = 'Stock', height = 300 }:
   useEffect(() => {
     if (!macdContainerRef.current || !rsiContainerRef.current || !kdjContainerRef.current) return;
 
-    // MACD图表
     const macdChart = createChart(macdContainerRef.current, {
       width: macdContainerRef.current.clientWidth,
       height: height / 3,
       layout: {
-        background: { color: '#1A1A2E' },
+        background: { color: '#1A1F28' },
         textColor: '#A0A0A0',
       },
       grid: {
-        vertLines: { color: '#2D2D44' },
-        horzLines: { color: '#2D2D44' },
+        vertLines: { color: '#2D3648' },
+        horzLines: { color: '#2D3648' },
       },
-      timeScale: { borderColor: '#2D2D44', timeVisible: true },
-      rightPriceScale: { borderColor: '#2D2D44' },
+      timeScale: { borderColor: '#2D3648', timeVisible: true },
+      rightPriceScale: { borderColor: '#2D3648' },
     });
 
     const macdLine = macdChart.addSeries(LineSeries, { color: '#3B82F6', lineWidth: 2 });
@@ -135,25 +133,23 @@ export default function TechnicalChart({ data, symbol = 'Stock', height = 300 }:
     macdChart.timeScale().fitContent();
     macdChartRef.current = macdChart;
 
-    // RSI图表
     const rsiChart = createChart(rsiContainerRef.current, {
       width: rsiContainerRef.current.clientWidth,
       height: height / 3,
       layout: {
-        background: { color: '#1A1A2E' },
+        background: { color: '#1A1F28' },
         textColor: '#A0A0A0',
       },
       grid: {
-        vertLines: { color: '#2D2D44' },
-        horzLines: { color: '#2D2D44' },
+        vertLines: { color: '#2D3648' },
+        horzLines: { color: '#2D3648' },
       },
-      timeScale: { borderColor: '#2D2D44', timeVisible: true },
-      rightPriceScale: { borderColor: '#2D2D44' },
+      timeScale: { borderColor: '#2D3648', timeVisible: true },
+      rightPriceScale: { borderColor: '#2D3648' },
     });
 
     const rsiLine = rsiChart.addSeries(LineSeries, { color: '#8B5CF6', lineWidth: 2 });
 
-    // 添加超买超卖线
     const overboughtLine = rsiChart.addSeries(LineSeries, {
       color: 'rgba(239, 68, 68, 0.5)',
       lineWidth: 1,
@@ -179,20 +175,19 @@ export default function TechnicalChart({ data, symbol = 'Stock', height = 300 }:
     rsiChart.timeScale().fitContent();
     rsiChartRef.current = rsiChart;
 
-    // KDJ图表
     const kdjChart = createChart(kdjContainerRef.current, {
       width: kdjContainerRef.current.clientWidth,
       height: height / 3,
       layout: {
-        background: { color: '#1A1A2E' },
+        background: { color: '#1A1F28' },
         textColor: '#A0A0A0',
       },
       grid: {
-        vertLines: { color: '#2D2D44' },
-        horzLines: { color: '#2D2D44' },
+        vertLines: { color: '#2D3648' },
+        horzLines: { color: '#2D3648' },
       },
-      timeScale: { borderColor: '#2D2D44', timeVisible: true },
-      rightPriceScale: { borderColor: '#2D2D44' },
+      timeScale: { borderColor: '#2D3648', timeVisible: true },
+      rightPriceScale: { borderColor: '#2D3648' },
     });
 
     const kLine = kdjChart.addSeries(LineSeries, { color: '#06B6D4', lineWidth: 2 });
@@ -223,7 +218,6 @@ export default function TechnicalChart({ data, symbol = 'Stock', height = 300 }:
     kdjChart.timeScale().fitContent();
     kdjChartRef.current = kdjChart;
 
-    // 响应窗口大小变化
     const handleResize = () => {
       if (macdContainerRef.current && macdChartRef.current) {
         macdChartRef.current.applyOptions({ width: macdContainerRef.current.clientWidth });
@@ -247,48 +241,46 @@ export default function TechnicalChart({ data, symbol = 'Stock', height = 300 }:
   }, [data, height]);
 
   return (
-    <div className="bg-background-600 rounded-lg p-4 border border-background-400 space-y-4">
+    <div className="bg-terminal-700 rounded-xl p-4 border border-border-subtle space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+        <h3 className="text-lg font-display font-semibold text-content-primary flex items-center gap-2">
           📊 {symbol} 技术指标
         </h3>
         <button
           onClick={() => setShowAll(!showAll)}
-          className="px-3 py-1 text-xs bg-background-500 hover:bg-background-400 text-gray-400 hover:text-white rounded transition-colors"
+          className="px-3 py-1.5 text-xs bg-terminal-600 hover:bg-terminal-500 text-content-muted hover:text-content-primary rounded-lg transition-colors border border-transparent hover:border-border-subtle"
         >
           {showAll ? '收起全部' : '展开全部'}
         </button>
       </div>
 
-      {/* Quick Summary - Always visible */}
       <div className="grid grid-cols-3 gap-2 text-center">
-        <div className="bg-background-500 rounded p-2">
-          <div className="text-xs text-gray-400">MACD</div>
-          <div className={`text-sm font-medium ${(data[data.length-1]?.macd ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+        <div className="bg-terminal-600 rounded-xl p-2.5">
+          <div className="text-xs text-content-muted mb-1">MACD</div>
+          <div className={`text-sm font-mono font-medium tabular-nums ${(data[data.length-1]?.macd ?? 0) >= 0 ? 'text-gain' : 'text-loss'}`}>
             {data[data.length-1]?.macd?.toFixed(2) ?? '-'}
           </div>
         </div>
-        <div className="bg-background-500 rounded p-2">
-          <div className="text-xs text-gray-400">RSI</div>
-          <div className={`text-sm font-medium ${
+        <div className="bg-terminal-600 rounded-xl p-2.5">
+          <div className="text-xs text-content-muted mb-1">RSI</div>
+          <div className={`text-sm font-mono font-medium tabular-nums ${
             (() => {
               const rsi = data[data.length-1]?.rsi;
-              if (rsi === undefined) return 'text-white';
-              return rsi > 70 ? 'text-red-400' : rsi < 30 ? 'text-green-400' : 'text-white';
+              if (rsi === undefined) return 'text-content-primary';
+              return rsi > 70 ? 'text-loss' : rsi < 30 ? 'text-gain' : 'text-content-primary';
             })()
           }`}>
             {data[data.length-1]?.rsi?.toFixed(1) ?? '-'}
           </div>
         </div>
-        <div className="bg-background-500 rounded p-2">
-          <div className="text-xs text-gray-400">KDJ.K</div>
-          <div className="text-sm font-medium text-white">
+        <div className="bg-terminal-600 rounded-xl p-2.5">
+          <div className="text-xs text-content-muted mb-1">KDJ.K</div>
+          <div className="text-sm font-mono font-medium text-content-primary tabular-nums">
             {data[data.length-1]?.kdjK?.toFixed(1) ?? '-'}
           </div>
         </div>
       </div>
 
-      {/* Collapsible Indicator Panels */}
       <div className="space-y-2">
         <CollapsibleIndicator title="MACD (12,26,9)" icon="📈" defaultOpen={showAll}>
           <div ref={macdContainerRef} className="w-full" style={{ height: `${height / 3}px` }} />
@@ -303,7 +295,7 @@ export default function TechnicalChart({ data, symbol = 'Stock', height = 300 }:
         </CollapsibleIndicator>
       </div>
 
-      <div className="mt-2 text-xs text-gray-500 text-center">
+      <div className="mt-2 text-xs text-content-subtle text-center">
         指标说明: MACD(趋势)、RSI(动量)、KDJ(随机指标) | 点击标题展开/折叠
       </div>
     </div>

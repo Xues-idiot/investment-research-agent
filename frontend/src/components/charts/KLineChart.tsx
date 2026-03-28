@@ -196,33 +196,33 @@ export default function KLineChart({ data, symbol = 'Stock', width = 800, height
   }, [data, width, height]);
 
   return (
-    <div ref={wrapperRef} className="bg-background-600 rounded-lg p-4 border border-background-400">
+    <div ref={wrapperRef} className="bg-terminal-700 rounded-xl p-4 border border-border-subtle">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+        <h3 className="text-lg font-display font-semibold text-content-primary flex items-center gap-2">
           📈 {symbol} K线走势图
         </h3>
         <div className="flex items-center gap-3 text-sm">
           <button
             onClick={handleFullscreen}
-            className="px-2 py-1 text-xs bg-background-500 hover:bg-background-400 text-gray-400 hover:text-white rounded transition-colors flex items-center gap-1"
+            className="px-3 py-1.5 text-xs bg-terminal-600 hover:bg-terminal-500 text-content-muted hover:text-content-primary rounded-lg transition-colors flex items-center gap-1 border border-transparent hover:border-border-subtle"
             title={isFullscreen ? '退出全屏' : '全屏'}
           >
-            {isFullscreen ? '⊠ 退出全屏' : '⛶ 全屏'}
+            {isFullscreen ? '⊠' : '⛶'}
           </button>
           <button
             onClick={handleResetZoom}
-            className="px-2 py-1 text-xs bg-background-500 hover:bg-background-400 text-gray-400 hover:text-white rounded transition-colors"
+            className="px-3 py-1.5 text-xs bg-terminal-600 hover:bg-terminal-500 text-content-muted hover:text-content-primary rounded-lg transition-colors border border-transparent hover:border-border-subtle"
             title="重置缩放"
           >
             重置
           </button>
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-full bg-green-500"></span>
-            <span className="text-gray-400">上涨</span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-gain"></span>
+            <span className="text-content-muted">上涨</span>
           </span>
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-full bg-red-500"></span>
-            <span className="text-gray-400">下跌</span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-loss"></span>
+            <span className="text-content-muted">下跌</span>
           </span>
         </div>
       </div>

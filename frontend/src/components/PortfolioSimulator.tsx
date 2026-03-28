@@ -24,17 +24,10 @@ export default function PortfolioSimulator({
   initialHoldings = [],
 }: PortfolioSimulatorProps) {
   const [holdings, setHoldings] = useState<Holding[]>(initialHoldings);
-  const [cash, setCash] = useState(1000000); // 初始现金 100万
+  const [cash, setCash] = useState(1000000);
   const [showAdd, setShowAdd] = useState(false);
   const [newHolding, setNewHolding] = useState({ code: '', name: '', shares: '', avgPrice: '' });
-  const [simulationResult, setSimulationResult] = useState<{
-    totalValue: number;
-    totalCost: number;
-    totalReturn: number;
-    totalReturnPct: number;
-  } | null>(null);
 
-  // Calculate portfolio metrics
   const metrics = useMemo(() => {
     const holdingsWithValue = holdings.map(h => ({
       ...h,
@@ -81,7 +74,6 @@ export default function PortfolioSimulator({
     setHoldings(prev => {
       const existing = prev.findIndex(h => h.code === holding.code);
       if (existing >= 0) {
-        // Update existing - recalculate average price
         const old = prev[existing];
         const totalShares = old.shares + holding.shares;
         const newAvgPrice = (old.avgPrice * old.shares + holding.avgPrice * holding.shares) / totalShares;
@@ -98,31 +90,6 @@ export default function PortfolioSimulator({
 
   const handleRemoveHolding = (code: string) => {
     setHoldings(prev => prev.filter(h => h.code !== code));
-  };
-
-  const handleSimulateRebalance = (targetAllocation: Record<string, number>) => {
-    // Simple rebalancing simulation
-    const totalValue = metrics.totalValue;
-    const trades: { code: string; action: 'buy' | 'sell'; amount: number }[] = [];
-
-    Object.entries(targetAllocation).forEach(([code, targetPct]) => {
-      const holding = metrics.holdings.find(h => h.code === code);
-      if (!holding) return;
-
-      const targetValue = (targetPct / 100) * totalValue;
-      const currentValue = holding.marketValue;
-      const diff = targetValue - currentValue;
-
-      if (Math.abs(diff) > 100) { // 阈值100元
-        trades.push({
-          code,
-          action: diff > 0 ? 'buy' : 'sell',
-          amount: Math.abs(diff),
-        });
-      }
-    });
-
-    alert(`需要 ${trades.length} 笔交易来再平衡组合`);
   };
 
   useCallback(() => {
@@ -144,33 +111,34 @@ export default function PortfolioSimulator({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-terminal-950/80 backdrop-blur-sm"
           />
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.2 }}
             className="fixed inset-4 z-50 flex items-center justify-center pointer-events-none"
           >
-            <div className="bg-background-600 rounded-2xl border border-background-400 shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col pointer-events-auto">
+            <div className="bg-terminal-800 rounded-3xl border border-border-subtle shadow-card max-w-4xl max-h-[90vh] w-full overflow-hidden flex flex-col pointer-events-auto">
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-background-400">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary-500/20 rounded-lg flex items-center justify-center">
-                    <span className="text-xl">🎯</span>
+              <div className="flex items-center justify-between px-6 py-5 border-b border-border-subtle">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-500/20 to-brand-600/20 border border-brand-500/30 flex items-center justify-center">
+                    <span className="text-2xl">🎯</span>
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white">组合模拟器</h2>
-                    <p className="text-xs text-gray-400">模拟投资组合表现和再平衡</p>
+                    <h2 className="text-xl font-display font-semibold text-content-primary">组合模拟器</h2>
+                    <p className="text-content-muted text-sm">模拟投资组合表现和再平衡</p>
                   </div>
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-2 text-gray-400 hover:text-white hover:bg-background-500 rounded-lg"
+                  className="p-2.5 rounded-xl text-content-muted hover:text-content-primary hover:bg-terminal-600 transition-all border border-transparent hover:border-border-subtle"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
@@ -181,12 +149,13 @@ export default function PortfolioSimulator({
                   {/* Holdings */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-white font-semibold">持仓</h3>
+                      <h3 className="text-content-primary font-display font-medium">持仓</h3>
                       <button
                         onClick={() => setShowAdd(true)}
-                        className="px-3 py-1.5 bg-primary-500/20 text-primary-400 text-sm rounded hover:bg-primary-500/30"
+                        className="btn btn-secondary text-sm py-1.5 px-3"
                       >
-                        + 添加持仓
+                        <span>+</span>
+                        <span>添加持仓</span>
                       </button>
                     </div>
 
@@ -197,50 +166,50 @@ export default function PortfolioSimulator({
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={{ opacity: 0, height: 0 }}
-                          className="mb-4 p-4 bg-background-500 rounded-lg"
+                          className="mb-4 p-4 bg-terminal-700 rounded-xl border border-border-subtle"
                         >
-                          <div className="grid grid-cols-2 gap-2 mb-2">
+                          <div className="grid grid-cols-2 gap-3 mb-3">
                             <input
                               type="text"
                               value={newHolding.code}
                               onChange={e => setNewHolding(p => ({ ...p, code: e.target.value }))}
                               placeholder="股票代码"
-                              className="px-3 py-1.5 bg-background-400 border border-background-300 rounded text-white text-sm"
+                              className="input"
                             />
                             <input
                               type="text"
                               value={newHolding.name}
                               onChange={e => setNewHolding(p => ({ ...p, name: e.target.value }))}
                               placeholder="股票名称"
-                              className="px-3 py-1.5 bg-background-400 border border-background-300 rounded text-white text-sm"
+                              className="input"
                             />
                           </div>
-                          <div className="grid grid-cols-2 gap-2 mb-2">
+                          <div className="grid grid-cols-2 gap-3 mb-3">
                             <input
                               type="number"
                               value={newHolding.shares}
                               onChange={e => setNewHolding(p => ({ ...p, shares: e.target.value }))}
                               placeholder="股数"
-                              className="px-3 py-1.5 bg-background-400 border border-background-300 rounded text-white text-sm"
+                              className="input"
                             />
                             <input
                               type="number"
                               value={newHolding.avgPrice}
                               onChange={e => setNewHolding(p => ({ ...p, avgPrice: e.target.value }))}
                               placeholder="平均成本"
-                              className="px-3 py-1.5 bg-background-400 border border-background-300 rounded text-white text-sm"
+                              className="input"
                             />
                           </div>
                           <div className="flex gap-2">
                             <button
                               onClick={handleAddHolding}
-                              className="flex-1 px-3 py-1.5 bg-primary-500 text-white rounded text-sm"
+                              className="btn btn-primary flex-1 py-2"
                             >
                               确认
                             </button>
                             <button
                               onClick={() => setShowAdd(false)}
-                              className="flex-1 px-3 py-1.5 bg-background-400 text-gray-300 rounded text-sm"
+                              className="btn btn-secondary flex-1 py-2"
                             >
                               取消
                             </button>
@@ -252,30 +221,37 @@ export default function PortfolioSimulator({
                     {/* Holdings List */}
                     <div className="space-y-2">
                       {metrics.holdings.length === 0 ? (
-                        <p className="text-gray-500 text-sm text-center py-8">暂无持仓，点击上方添加</p>
+                        <div className="card p-8 text-center">
+                          <div className="text-4xl mb-3">📊</div>
+                          <p className="text-content-muted text-sm">暂无持仓，点击上方添加</p>
+                        </div>
                       ) : (
                         metrics.holdings.map(holding => (
                           <div
                             key={holding.code}
-                            className="p-3 bg-background-500/50 rounded-lg flex items-center justify-between group"
+                            className="card p-4 flex items-center justify-between group hover:border-border-default transition-colors"
                           >
                             <div>
-                              <p className="text-white font-medium">{holding.name || holding.code}</p>
-                              <p className="text-gray-500 text-xs">{holding.code} · {holding.shares}股 · ¥{holding.avgPrice}</p>
+                              <p className="text-content-primary font-medium">{holding.name || holding.code}</p>
+                              <p className="text-content-muted text-xs font-mono tabular-nums">
+                                {holding.code} · {holding.shares}股 · ¥{holding.avgPrice.toFixed(2)}
+                              </p>
                             </div>
                             <div className="text-right">
-                              <p className={`font-medium ${holding.return >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                {holding.return >= 0 ? '+' : ''}{holding.return.toFixed(0)}元
+                              <p className={`font-mono font-medium tabular-nums ${holding.return >= 0 ? 'text-gain' : 'text-loss'}`}>
+                                {holding.return >= 0 ? '+' : ''}¥{holding.return.toFixed(0)}
                               </p>
-                              <p className={`text-xs ${holding.returnPct >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                              <p className={`text-xs font-mono tabular-nums ${holding.returnPct >= 0 ? 'text-gain' : 'text-loss'}`}>
                                 {holding.returnPct >= 0 ? '+' : ''}{holding.returnPct.toFixed(2)}%
                               </p>
                             </div>
                             <button
                               onClick={() => handleRemoveHolding(holding.code)}
-                              className="p-1 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100"
+                              className="p-1.5 rounded-lg text-content-muted hover:text-loss hover:bg-loss/10 opacity-0 group-hover:opacity-100 transition-all ml-2"
                             >
-                              ×
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
                             </button>
                           </div>
                         ))
@@ -287,23 +263,27 @@ export default function PortfolioSimulator({
                   <div>
                     {/* Summary */}
                     <div className="grid grid-cols-2 gap-3 mb-6">
-                      <div className="p-4 bg-background-500/50 rounded-lg text-center">
-                        <p className="text-gray-400 text-xs mb-1">总市值</p>
-                        <p className="text-2xl font-bold text-white">¥{metrics.totalMarketValue.toFixed(0)}</p>
+                      <div className="card p-4 text-center">
+                        <p className="text-content-muted text-xs mb-1">总市值</p>
+                        <p className="text-2xl font-display font-bold text-content-primary tabular-nums">
+                          ¥{metrics.totalMarketValue.toFixed(0)}
+                        </p>
                       </div>
-                      <div className="p-4 bg-background-500/50 rounded-lg text-center">
-                        <p className="text-gray-400 text-xs mb-1">可用现金</p>
-                        <p className="text-2xl font-bold text-white">¥{metrics.cash.toFixed(0)}</p>
+                      <div className="card p-4 text-center">
+                        <p className="text-content-muted text-xs mb-1">可用现金</p>
+                        <p className="text-2xl font-display font-bold text-content-primary tabular-nums">
+                          ¥{metrics.cash.toFixed(0)}
+                        </p>
                       </div>
-                      <div className="p-4 bg-background-500/50 rounded-lg text-center">
-                        <p className="text-gray-400 text-xs mb-1">总收益</p>
-                        <p className={`text-2xl font-bold ${metrics.totalReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <div className="card p-4 text-center">
+                        <p className="text-content-muted text-xs mb-1">总收益</p>
+                        <p className={`text-2xl font-display font-bold tabular-nums ${metrics.totalReturn >= 0 ? 'text-gain' : 'text-loss'}`}>
                           {metrics.totalReturn >= 0 ? '+' : ''}¥{metrics.totalReturn.toFixed(0)}
                         </p>
                       </div>
-                      <div className="p-4 bg-background-500/50 rounded-lg text-center">
-                        <p className="text-gray-400 text-xs mb-1">收益率</p>
-                        <p className={`text-2xl font-bold ${metrics.totalReturnPct >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <div className="card p-4 text-center">
+                        <p className="text-content-muted text-xs mb-1">收益率</p>
+                        <p className={`text-2xl font-display font-bold tabular-nums ${metrics.totalReturnPct >= 0 ? 'text-gain' : 'text-loss'}`}>
                           {metrics.totalReturnPct >= 0 ? '+' : ''}{metrics.totalReturnPct.toFixed(2)}%
                         </p>
                       </div>
@@ -311,8 +291,8 @@ export default function PortfolioSimulator({
 
                     {/* Allocation Chart */}
                     {metrics.holdings.length > 0 && (
-                      <div className="p-4 bg-background-500/50 rounded-lg">
-                        <h4 className="text-white font-medium mb-4">仓位分布</h4>
+                      <div className="card p-4">
+                        <h4 className="text-content-primary font-display font-medium mb-4">仓位分布</h4>
                         <div className="h-48">
                           <AllocationChart
                             holdings={metrics.holdings.map(h => ({

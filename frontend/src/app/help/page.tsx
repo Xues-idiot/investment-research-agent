@@ -15,48 +15,56 @@ const features = [
     title: '投资研究',
     description: '输入股票代码，AI多维度分析生成专业投资研究报告',
     link: '/research',
+    color: 'brand',
   },
   {
     icon: '📈',
     title: '股票对比',
     description: '最多4只股票横向对比，估值、技术面、市场表现一目了然',
     link: '/compare',
+    color: 'emerald',
   },
   {
     icon: '🔔',
     title: '监控告警',
     description: '设置价格、RSI、成交量告警，实时推送通知',
     link: '/monitor',
+    color: 'orange',
   },
   {
     icon: '💼',
     title: '组合管理',
     description: '输入持仓，获取仓位建议和风险分析',
     link: '/portfolio',
+    color: 'purple',
   },
   {
     icon: '🔬',
     title: '策略回测',
     description: '均线、RSI、动量策略历史回测，验证策略有效性',
     link: '/backtest',
+    color: 'rose',
   },
   {
     icon: '📤',
     title: '报告导出',
     description: '导出PDF/HTML格式报告，方便分享和存档',
     link: '/exports',
+    color: 'indigo',
   },
   {
     icon: '⭐',
     title: '我的收藏',
     description: '收藏关注的股票，快速访问和管理',
     link: '/favorites',
+    color: 'yellow',
   },
   {
     icon: '📝',
     title: '更新日志',
     description: '查看最新版本更新和新功能',
     link: '/changelog',
+    color: 'cyan',
   },
 ];
 
@@ -79,18 +87,35 @@ const faqs = [
   },
 ];
 
+const colorMap: Record<string, { bg: string; border: string; text: string }> = {
+  brand: { bg: 'bg-brand-500/10', border: 'border-brand-500/30', text: 'text-brand-400' },
+  emerald: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-400' },
+  orange: { bg: 'bg-orange-500/10', border: 'border-orange-500/30', text: 'text-orange-400' },
+  purple: { bg: 'bg-purple-500/10', border: 'border-purple-500/30', text: 'text-purple-400' },
+  rose: { bg: 'bg-rose-500/10', border: 'border-rose-500/30', text: 'text-rose-400' },
+  indigo: { bg: 'bg-indigo-500/10', border: 'border-indigo-500/30', text: 'text-indigo-400' },
+  yellow: { bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', text: 'text-yellow-400' },
+  cyan: { bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', text: 'text-cyan-400' },
+};
+
 export default function HelpPage() {
   return (
-    <div className="min-h-screen bg-background-500">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-terminal-900">
+      <div className="fixed inset-0 bg-mesh pointer-events-none"></div>
+
+      <div className="relative max-w-4xl mx-auto px-4 py-8 pt-24">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-10"
         >
-          <h1 className="text-3xl font-bold text-white mb-2">❓ 帮助中心</h1>
-          <p className="text-gray-400">了解Rho投研Agent的所有功能</p>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-sm mb-4">
+            <span>❓</span>
+            <span>帮助中心</span>
+          </div>
+          <h1 className="text-4xl font-display font-bold text-content-primary mb-3">Rho 帮助中心</h1>
+          <p className="text-content-muted text-lg">了解Rho投研Agent的所有功能</p>
         </motion.div>
 
         {/* Quick Start */}
@@ -98,24 +123,27 @@ export default function HelpPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mb-8"
+          className="mb-10"
         >
-          <h2 className="text-xl font-semibold text-white mb-4">⌨️ 快捷键</h2>
-          <div className="bg-background-600 rounded-lg p-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <h2 className="text-xl font-display font-semibold text-content-primary mb-4 flex items-center gap-2">
+            <span>⌨️</span>
+            <span>快捷键</span>
+          </h2>
+          <div className="card p-5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {shortcuts.map((s) => (
-                <div key={s.description} className="flex items-center gap-2">
+                <div key={s.description} className="flex items-center gap-3 p-3 rounded-xl bg-terminal-700/50">
                   <div className="flex gap-1">
                     {s.keys.map((k) => (
                       <kbd
                         key={k}
-                        className="px-2 py-1 bg-background-500 rounded text-xs text-white border border-background-400"
+                        className="px-2.5 py-1 bg-terminal-600 rounded-lg text-xs text-content-primary font-mono border border-border-subtle shadow-sm"
                       >
                         {k}
                       </kbd>
                     ))}
                   </div>
-                  <span className="text-gray-400 text-sm">{s.description}</span>
+                  <span className="text-content-muted text-sm">{s.description}</span>
                 </div>
               ))}
             </div>
@@ -127,27 +155,35 @@ export default function HelpPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mb-8"
+          className="mb-10"
         >
-          <h2 className="text-xl font-semibold text-white mb-4">🚀 功能介绍</h2>
+          <h2 className="text-xl font-display font-semibold text-content-primary mb-4 flex items-center gap-2">
+            <span>🚀</span>
+            <span>功能介绍</span>
+          </h2>
           <div className="grid md:grid-cols-2 gap-4">
-            {features.map((f) => (
-              <Link
-                key={f.link}
-                href={f.link}
-                className="bg-background-600 rounded-lg p-4 hover:bg-background-500 transition-colors group"
-              >
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">{f.icon}</span>
-                  <div>
-                    <h3 className="text-white font-medium group-hover:text-blue-400 transition-colors">
-                      {f.title}
-                    </h3>
-                    <p className="text-gray-400 text-sm mt-1">{f.description}</p>
+            {features.map((f) => {
+              const colors = colorMap[f.color] || colorMap.brand;
+              return (
+                <Link
+                  key={f.link}
+                  href={f.link}
+                  className={`card p-5 hover:border-${f.color === 'brand' ? 'brand' : f.color}-500/40 transition-all group`}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className={`w-12 h-12 rounded-xl ${colors.bg} border ${colors.border} flex items-center justify-center text-xl flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                      {f.icon}
+                    </div>
+                    <div>
+                      <h3 className={`font-display font-medium ${colors.text} mb-1 group-hover:underline underline-offset-2`}>
+                        {f.title}
+                      </h3>
+                      <p className="text-content-muted text-sm leading-relaxed">{f.description}</p>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </motion.div>
 
@@ -156,17 +192,23 @@ export default function HelpPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mb-8"
+          className="mb-10"
         >
-          <h2 className="text-xl font-semibold text-white mb-4">💡 常见问题</h2>
+          <h2 className="text-xl font-display font-semibold text-content-primary mb-4 flex items-center gap-2">
+            <span>💡</span>
+            <span>常见问题</span>
+          </h2>
           <div className="space-y-3">
-            {faqs.map((faq) => (
+            {faqs.map((faq, i) => (
               <div
-                key={faq.q}
-                className="bg-background-600 rounded-lg p-4"
+                key={i}
+                className="card p-5"
               >
-                <h3 className="text-white font-medium mb-2">{faq.q}</h3>
-                <p className="text-gray-400 text-sm">{faq.a}</p>
+                <h3 className="text-content-primary font-medium mb-2 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-400"></span>
+                  {faq.q}
+                </h3>
+                <p className="text-content-muted text-sm leading-relaxed pl-3.5">{faq.a}</p>
               </div>
             ))}
           </div>
@@ -177,17 +219,20 @@ export default function HelpPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-background-600 rounded-lg p-6 text-center"
+          className="card p-8 text-center"
         >
-          <h2 className="text-xl font-semibold text-white mb-2">📈 Rho 投研 Agent</h2>
-          <p className="text-gray-400 text-sm mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-3xl mx-auto mb-4 shadow-glow-sm">
+            📈
+          </div>
+          <h2 className="text-2xl font-display font-semibold text-content-primary mb-2">Rho 投研 Agent</h2>
+          <p className="text-content-muted mb-6 max-w-md mx-auto">
             AI驱动的投研分析引擎，输出可直接使用的投资简报
           </p>
-          <div className="flex justify-center gap-4 text-sm">
-            <Link href="/research" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+          <div className="flex justify-center gap-3">
+            <Link href="/research" className="btn btn-primary px-6 py-2.5 shadow-glow">
               开始使用
             </Link>
-            <Link href="/" className="px-4 py-2 bg-background-500 hover:bg-background-400 text-white rounded-lg transition-colors">
+            <Link href="/" className="btn btn-secondary px-6 py-2.5">
               返回首页
             </Link>
           </div>

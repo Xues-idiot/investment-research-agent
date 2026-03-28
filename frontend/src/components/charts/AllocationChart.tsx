@@ -16,8 +16,11 @@ interface AllocationChartProps {
 export default function AllocationChart({ holdings, cashReservePct = 0, height = 300 }: AllocationChartProps) {
   if (!holdings || holdings.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 bg-background-500 rounded-lg">
-        <p className="text-gray-500">暂无数据</p>
+      <div className="flex items-center justify-center bg-terminal-700 rounded-xl p-6" style={{ height }}>
+        <div className="text-center">
+          <div className="text-4xl mb-2">📊</div>
+          <p className="text-content-muted text-sm">暂无数据</p>
+        </div>
       </div>
     );
   }
@@ -27,12 +30,11 @@ export default function AllocationChart({ holdings, cashReservePct = 0, height =
   const centerX = size / 2;
   const centerY = size / 2;
   const outerRadius = size / 2 - 20;
-  const innerRadius = outerRadius * 0.6; // donut hole
+  const innerRadius = outerRadius * 0.6;
 
-  // 计算每个持仓的弧度
   const totalWeight = holdings.reduce((sum, h) => sum + h.weight, 0) + cashReservePct;
 
-  let currentAngle = -Math.PI / 2; // 从顶部开始
+  let currentAngle = -Math.PI / 2;
 
   const paths = holdings.map((holding, index) => {
     const weight = holding.weight / totalWeight;
@@ -43,7 +45,6 @@ export default function AllocationChart({ holdings, cashReservePct = 0, height =
 
     const color = COLORS[index % COLORS.length];
 
-    // 计算弧线路径
     const x1 = centerX + Math.cos(startAngle) * outerRadius;
     const y1 = centerY + Math.sin(startAngle) * outerRadius;
     const x2 = centerX + Math.cos(endAngle) * outerRadius;
@@ -67,7 +68,6 @@ export default function AllocationChart({ holdings, cashReservePct = 0, height =
     return { d, color, holding, percentage: (holding.weight * 100).toFixed(1) };
   });
 
-  // 添加现金保留
   if (cashReservePct > 0) {
     const weight = cashReservePct / totalWeight;
     const angle = weight * Math.PI * 2;
@@ -98,7 +98,7 @@ export default function AllocationChart({ holdings, cashReservePct = 0, height =
   }
 
   return (
-    <div className="bg-background-500 rounded-lg p-4">
+    <div className="bg-terminal-700 rounded-xl p-4 border border-border-subtle">
       <div className="flex items-center justify-between">
         <svg viewBox={`0 0 ${size} ${size}`} style={{ width: size, height: size }}>
           {paths.map((path, index) => (
@@ -109,12 +109,11 @@ export default function AllocationChart({ holdings, cashReservePct = 0, height =
               className="transition-all hover:opacity-80 cursor-pointer"
             />
           ))}
-          {/* Center text */}
           <text
             x={centerX}
             y={centerY - 10}
             textAnchor="middle"
-            fill="#9CA3AF"
+            fill="#64748B"
             fontSize="12"
           >
             持仓数量
@@ -123,7 +122,7 @@ export default function AllocationChart({ holdings, cashReservePct = 0, height =
             x={centerX}
             y={centerY + 15}
             textAnchor="middle"
-            fill="#FFFFFF"
+            fill="#F1F5F9"
             fontSize="24"
             fontWeight="bold"
           >
@@ -131,18 +130,17 @@ export default function AllocationChart({ holdings, cashReservePct = 0, height =
           </text>
         </svg>
 
-        {/* Legend */}
-        <div className="flex flex-col gap-2 pr-4">
+        <div className="flex flex-col gap-2.5 pr-4">
           {paths.map((path, index) => (
-            <div key={path.holding.stockCode || `cash-${index}`} className="flex items-center gap-2">
+            <div key={path.holding.stockCode || `cash-${index}`} className="flex items-center gap-2.5">
               <span
-                className="w-3 h-3 rounded-full"
+                className="w-3 h-3 rounded-full flex-shrink-0"
                 style={{ backgroundColor: path.color }}
               />
-              <span className="text-white text-sm">
+              <span className="text-content-primary text-sm font-medium">
                 {path.holding.stockName || path.holding.stockCode}
               </span>
-              <span className="text-gray-400 text-sm">
+              <span className="text-content-muted text-sm font-mono tabular-nums">
                 {path.percentage}%
               </span>
             </div>

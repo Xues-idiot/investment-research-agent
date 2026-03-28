@@ -34,48 +34,45 @@ export default function ComparisonKLineChart({ data, height = 400 }: ComparisonK
   useEffect(() => {
     if (!chartContainerRef.current || !data || data.length === 0) return;
 
-    // 创建图表
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
       height,
       layout: {
-        background: { color: '#1A1A2E' },
+        background: { color: '#1A1F28' },
         textColor: '#A0A0A0',
       },
       grid: {
-        vertLines: { color: '#2D2D44' },
-        horzLines: { color: '#2D2D44' },
+        vertLines: { color: '#2D3648' },
+        horzLines: { color: '#2D3648' },
       },
       crosshair: {
         mode: 1,
         vertLine: {
-          color: '#C9A227',
+          color: '#F59E0B',
           width: 1,
           style: 2,
-          labelBackgroundColor: '#C9A227',
+          labelBackgroundColor: '#F59E0B',
         },
         horzLine: {
-          color: '#C9A227',
+          color: '#F59E0B',
           width: 1,
           style: 2,
-          labelBackgroundColor: '#C9A227',
+          labelBackgroundColor: '#F59E0B',
         },
       },
       timeScale: {
-        borderColor: '#2D2D44',
+        borderColor: '#2D3648',
         timeVisible: true,
         secondsVisible: false,
         rightOffset: 5,
       },
       rightPriceScale: {
-        borderColor: '#2D2D44',
+        borderColor: '#2D3648',
       },
     });
 
     chartRef.current = chart;
 
-    // 为每只股票添加归一化价格线
-    // 归一化：以第一天的收盘价为基准，计算相对变化百分比
     const seriesMap: Record<string, { series: any; color: string; name: string }> = {};
 
     data.forEach((stock, index) => {
@@ -83,7 +80,6 @@ export default function ComparisonKLineChart({ data, height = 400 }: ComparisonK
 
       const color = COLORS[index % COLORS.length];
 
-      // 创建线系列
       const lineSeries = chart.addSeries(LineSeries, {
         color,
         lineWidth: 2,
@@ -91,21 +87,18 @@ export default function ComparisonKLineChart({ data, height = 400 }: ComparisonK
         lastValueVisible: true,
       });
 
-      // 归一化处理：以第一天收盘价为100
       const basePrice = stock.kline[0].close;
       const normalizedData: LineData<Time>[] = stock.kline.map(k => ({
         time: k.time as Time,
-        value: ((k.close - basePrice) / basePrice) * 100,  // 百分比变化
+        value: ((k.close - basePrice) / basePrice) * 100,
       }));
 
       lineSeries.setData(normalizedData);
       seriesMap[stock.code] = { series: lineSeries, color, name: stock.name || stock.code };
     });
 
-    // 适应窗口
     chart.timeScale().fitContent();
 
-    // 响应窗口大小变化
     const handleResize = () => {
       if (chartContainerRef.current && chartRef.current) {
         chartRef.current.applyOptions({
@@ -124,23 +117,26 @@ export default function ComparisonKLineChart({ data, height = 400 }: ComparisonK
 
   if (!data || data.length === 0) {
     return (
-      <div className="bg-background-600 rounded-lg p-4 border border-background-400 flex items-center justify-center h-64">
-        <p className="text-gray-500">暂无数据</p>
+      <div className="bg-terminal-700 rounded-xl p-4 border border-border-subtle flex items-center justify-center" style={{ height }}>
+        <div className="text-center">
+          <div className="text-4xl mb-2">📈</div>
+          <p className="text-content-muted text-sm">暂无数据</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-background-600 rounded-lg p-4 border border-background-400">
+    <div className="bg-terminal-700 rounded-xl p-4 border border-border-subtle">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+        <h3 className="text-lg font-display font-semibold text-content-primary flex items-center gap-2">
           📈 多股票走势对比
         </h3>
         <div className="flex items-center gap-4 text-xs">
           {data.map((stock, index) => (
             <span
               key={stock.code}
-              className="flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity"
+              className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
               onMouseEnter={() => setHoveredStock(stock.code)}
               onMouseLeave={() => setHoveredStock(null)}
             >
@@ -148,7 +144,7 @@ export default function ComparisonKLineChart({ data, height = 400 }: ComparisonK
                 className="w-3 h-0.5 rounded"
                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
               />
-              <span className="text-gray-400">{stock.name || stock.code}</span>
+              <span className="text-content-muted">{stock.name || stock.code}</span>
             </span>
           ))}
         </div>
@@ -156,9 +152,9 @@ export default function ComparisonKLineChart({ data, height = 400 }: ComparisonK
 
       <div ref={chartContainerRef} className="w-full" style={{ height: `${height}px` }} />
 
-      <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
+      <div className="mt-3 flex items-center justify-between text-xs text-content-subtle">
         <span>🖱️ 滚轮缩放 | 拖拽平移</span>
-        <span className="text-yellow-400">注: 价格已归一化（首日=100%）</span>
+        <span className="text-accent">注: 价格已归一化（首日=100%）</span>
       </div>
     </div>
   );

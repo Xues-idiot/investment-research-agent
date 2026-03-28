@@ -19,16 +19,33 @@ export default function FavoritesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background-500">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-terminal-900">
+      <div className="fixed inset-0 bg-mesh pointer-events-none"></div>
+
+      <div className="relative max-w-4xl mx-auto px-4 py-8 pt-24">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold text-white mb-2">⭐ 我的收藏</h1>
-          <p className="text-gray-400">管理您关注的股票，快速访问研究页面</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm mb-3">
+                <span>⭐</span>
+                <span>我的收藏</span>
+              </div>
+              <h1 className="text-4xl font-display font-bold text-content-primary mb-2">我的收藏</h1>
+              <p className="text-content-muted">管理您关注的股票，快速访问研究页面</p>
+            </div>
+            <Link
+              href="/research"
+              className="btn btn-primary px-5 py-2.5 shadow-glow"
+            >
+              <span>+</span>
+              <span>添加股票</span>
+            </Link>
+          </div>
         </motion.div>
 
         {/* Stats */}
@@ -38,18 +55,21 @@ export default function FavoritesPage() {
           transition={{ delay: 0.1 }}
           className="mb-8"
         >
-          <div className="bg-background-600 rounded-lg p-4 flex items-center justify-between">
-            <div>
-              <span className="text-gray-400 text-sm">收藏数量</span>
-              <p className="text-2xl font-bold text-white">{favorites.length}</p>
+          <div className="card p-5 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-yellow-500/20 flex items-center justify-center">
+                <span className="text-2xl">📌</span>
+              </div>
+              <div>
+                <span className="text-content-muted text-sm">收藏数量</span>
+                <p className="text-2xl font-display font-bold text-content-primary tabular-nums">{favorites.length}</p>
+              </div>
             </div>
-            <div className="text-right">
-              <Link
-                href="/research"
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
-              >
-                + 添加股票
-              </Link>
+            <div className="flex items-center gap-2">
+              <span className="badge badge-brand">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-400 mr-1"></span>
+                活跃
+              </span>
             </div>
           </div>
         </motion.div>
@@ -62,13 +82,17 @@ export default function FavoritesPage() {
           className="space-y-3"
         >
           {favorites.length === 0 ? (
-            <div className="bg-background-600 rounded-lg p-12 text-center">
-              <div className="text-4xl mb-4">📌</div>
-              <h3 className="text-xl font-medium text-white mb-2">暂无收藏</h3>
-              <p className="text-gray-400 mb-4">在研究页面点击星标添加收藏</p>
+            <div className="card p-16 text-center">
+              <div className="w-20 h-20 rounded-3xl bg-yellow-500/10 flex items-center justify-center text-5xl mx-auto mb-6">
+                📌
+              </div>
+              <h3 className="text-2xl font-display font-semibold text-content-primary mb-2">暂无收藏</h3>
+              <p className="text-content-muted mb-6 max-w-sm mx-auto">
+                在研究页面点击星标添加收藏，快速访问您关注的股票
+              </p>
               <Link
                 href="/research"
-                className="inline-block px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                className="btn btn-primary px-6 py-3 shadow-glow"
               >
                 开始研究
               </Link>
@@ -80,40 +104,43 @@ export default function FavoritesPage() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="bg-background-600 rounded-lg p-4 flex items-center justify-between hover:bg-background-500 transition-colors group"
+                className="card p-4 flex items-center justify-between hover:border-border-default transition-colors group"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-lg">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500/20 to-brand-600/20 border border-brand-500/30 flex items-center justify-center text-content-primary font-bold text-lg font-mono tabular-nums">
                     {stock.code.slice(0, 2)}
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-white font-medium">{stock.name}</h3>
-                      <span className="text-gray-500 text-sm">{stock.code}</span>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-content-primary font-medium">{stock.name}</h3>
+                      <span className="badge text-xs">{stock.code}</span>
                     </div>
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-content-muted text-xs">
                       添加于 {formatDate(stock.addedAt)}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
                   <Link
                     href={`/research?code=${stock.code}`}
-                    className="px-4 py-2 bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white rounded-lg transition-colors text-sm"
+                    className="btn btn-secondary px-4 py-2 text-sm"
                   >
-                    研究
+                    <span>📊</span>
+                    <span>研究</span>
                   </Link>
                   <Link
                     href={`/compare?codes=${stock.code}`}
-                    className="px-4 py-2 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white rounded-lg transition-colors text-sm"
+                    className="btn btn-secondary px-4 py-2 text-sm"
                   >
-                    对比
+                    <span>📈</span>
+                    <span>对比</span>
                   </Link>
                   <button
                     onClick={() => removeFavorite(stock.code)}
-                    className="px-4 py-2 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white rounded-lg transition-colors text-sm"
+                    className="btn px-4 py-2 text-sm bg-loss/10 text-loss border border-loss/20 hover:bg-loss hover:text-white hover:border-loss"
                   >
-                    移除
+                    <span>×</span>
+                    <span>移除</span>
                   </button>
                 </div>
               </motion.div>
