@@ -4,9 +4,9 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 const shortcuts = [
-  { keys: ['Ctrl', 'K'], description: '打开搜索' },
-  { keys: ['Ctrl', 'Enter'], description: '开始研究' },
-  { keys: ['Esc'], description: '关闭弹窗' },
+  { keys: ['R'], description: '聚焦搜索框' },
+  { keys: ['C'], description: '切换流式/传统模式' },
+  { keys: ['Esc'], description: '取消当前操作' },
 ];
 
 const features = [
